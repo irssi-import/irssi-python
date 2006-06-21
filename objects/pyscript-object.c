@@ -37,28 +37,32 @@ static void PyScript_dealloc(PyScript* self)
 
 static PyObject *PyScript_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    PyScript *self;
+    PyScript *self; 
+    PyObject *argv, *modules;
+
+    argv = PyList_New(0);
+    if (!argv)
+        return NULL; 
+
+    modules = PyDict_New();
+    if (!modules)
+    {
+        Py_DECREF(argv);
+        return NULL; 
+    }
 
     self = (PyScript *)type->tp_alloc(type, 0);
     if (!self)
+    {
+        Py_DECREF(argv);
+        Py_DECREF(modules);
         return NULL;
-
-    self->argv = PyList_New(0);
-    if (!self->argv)
-        goto error;
-
-    self->modules = PyDict_New();
-    if (!self->modules)
-        goto error; 
+    }
+   
+    self->argv = argv;
+    self->modules = modules;
     
     return (PyObject *)self;
-
-error:
-    Py_XDECREF(self->argv);
-    Py_XDECREF(self->modules);
-    Py_DECREF(self);
-
-    return NULL;
 }
 
 static PyObject *PyScript_command_bind(PyScript *self, PyObject *args, PyObject *kwds)
@@ -67,7 +71,7 @@ static PyObject *PyScript_command_bind(PyScript *self, PyObject *args, PyObject 
     char *cmd;
     PyObject *func;
     char *category = NULL;
-    PY_COMMAND_REC *crec;
+    PY_SIGNAL_REC *srec;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|s", kwlist, &cmd, &func, &category))
         return NULL;
@@ -75,12 +79,7 @@ static PyObject *PyScript_command_bind(PyScript *self, PyObject *args, PyObject 
     if (!PyCallable_Check(func))
         return PyErr_Format(PyExc_TypeError, "func must be callable");
   
-    crec = g_new(PY_COMMAND_REC, 1);
-    crec->name = g_strdup(cmd);
-    crec->handler = func;
-    Py_INCREF(func);
-
-    py_command_bind(category, crec);
+    srec = py_command_bind(cmd, func, category);
    
     /* add record to internal list*/
     self->signals = g_slist_append(self->signals, crec);
@@ -189,7 +188,7 @@ void pyscript_remove_signals(PyObject *script)
 
     for (node = self->signals; node != NULL; node = node->next) 
     {
-        PY_COMMAND_REC *crec = node->data;
+        PY_SIGNAL_REC *crec = node->data;
 
         py_command_unbind(crec);
         g_free(crec->name);

@@ -116,6 +116,9 @@ static int init_objects(void)
     if (!process_object_init())
         return 0;
 
+    if (!command_object_init())
+        return 0;
+
     return 1;
 }
 

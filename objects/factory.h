@@ -31,6 +31,7 @@
 #include "netsplit-channel-object.h"
 #include "notifylist-object.h"
 #include "process-object.h"
+#include "command-object.h"
 
 int factory_init(void);
 void factory_deinit(void);
