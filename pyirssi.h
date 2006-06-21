@@ -21,5 +21,6 @@
 #include "rawlog.h"
 #include "log.h"
 #include "ignore.h"
+#include "fe-exec.h"
 
 #endif

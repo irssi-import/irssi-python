@@ -5,6 +5,7 @@
 #include "factory.h"
 #include "pycore.h"
 
+
 /* monitor "dcc destroyed signal" */
 static void dcc_cleanup(DCC_REC *dcc)
 {
@@ -35,12 +36,11 @@ PyDoc_STRVAR(PyDcc_orig_type_doc,
 );
 static PyObject *PyDcc_orig_type_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
     const char *type;
     
-    RET_NULL_IF_INVALID(data);
+    RET_NULL_IF_INVALID(self->data);
 
-    type = module_find_id_str("DCC", data->orig_type);
+    type = module_find_id_str("DCC", DCC(self->data)->orig_type);
     RET_AS_STRING_OR_NONE(type);
 }
 
@@ -49,10 +49,8 @@ PyDoc_STRVAR(PyDcc_created_doc,
 );
 static PyObject *PyDcc_created_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    return PyLong_FromUnsignedLong(data->created);
+    RET_NULL_IF_INVALID(self->data);
+    return PyLong_FromUnsignedLong(DCC(self->data)->created);
 }
 
 PyDoc_STRVAR(PyDcc_server_doc,
@@ -60,9 +58,7 @@ PyDoc_STRVAR(PyDcc_server_doc,
 );
 static PyObject *PyDcc_server_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
+    RET_NULL_IF_INVALID(self->data);
     RET_AS_OBJ_OR_NONE(self->server);
 }
 
@@ -71,10 +67,8 @@ PyDoc_STRVAR(PyDcc_servertag_doc,
 );
 static PyObject *PyDcc_servertag_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->servertag);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->servertag);
 }
 
 PyDoc_STRVAR(PyDcc_mynick_doc,
@@ -82,10 +76,8 @@ PyDoc_STRVAR(PyDcc_mynick_doc,
 );
 static PyObject *PyDcc_mynick_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->mynick);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->mynick);
 }
 
 PyDoc_STRVAR(PyDcc_nick_doc,
@@ -93,10 +85,8 @@ PyDoc_STRVAR(PyDcc_nick_doc,
 );
 static PyObject *PyDcc_nick_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->nick);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->nick);
 }
 
 PyDoc_STRVAR(PyDcc_chat_doc,
@@ -104,9 +94,7 @@ PyDoc_STRVAR(PyDcc_chat_doc,
 );
 static PyObject *PyDcc_chat_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
+    RET_NULL_IF_INVALID(self->data);
     RET_AS_OBJ_OR_NONE(self->chat);
 }
 
@@ -115,10 +103,8 @@ PyDoc_STRVAR(PyDcc_target_doc,
 );
 static PyObject *PyDcc_target_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->target);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->target);
 }
 
 PyDoc_STRVAR(PyDcc_arg_doc,
@@ -126,10 +112,8 @@ PyDoc_STRVAR(PyDcc_arg_doc,
 );
 static PyObject *PyDcc_arg_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->arg);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->arg);
 }
 
 PyDoc_STRVAR(PyDcc_addr_doc,
@@ -137,10 +121,8 @@ PyDoc_STRVAR(PyDcc_addr_doc,
 );
 static PyObject *PyDcc_addr_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    RET_AS_STRING_OR_NONE(data->addrstr);
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(DCC(self->data)->addrstr);
 }
 
 PyDoc_STRVAR(PyDcc_port_doc,
@@ -148,10 +130,8 @@ PyDoc_STRVAR(PyDcc_port_doc,
 );
 static PyObject *PyDcc_port_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    return PyInt_FromLong(data->port);
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(DCC(self->data)->port);
 }
 
 PyDoc_STRVAR(PyDcc_starttime_doc,
@@ -159,10 +139,8 @@ PyDoc_STRVAR(PyDcc_starttime_doc,
 );
 static PyObject *PyDcc_starttime_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    return PyLong_FromUnsignedLong(data->starttime);
+    RET_NULL_IF_INVALID(self->data);
+    return PyLong_FromUnsignedLong(DCC(self->data)->starttime);
 }
 
 PyDoc_STRVAR(PyDcc_transfd_doc,
@@ -170,10 +148,8 @@ PyDoc_STRVAR(PyDcc_transfd_doc,
 );
 static PyObject *PyDcc_transfd_get(PyDcc *self, void *closure)
 {
-    DCC_REC *data = self->data;
-
-    RET_NULL_IF_INVALID(data);
-    return PyLong_FromUnsignedLong(data->transfd);
+    RET_NULL_IF_INVALID(self->data);
+    return PyLong_FromUnsignedLong(DCC(self->data)->transfd);
 }
 
 /* specialized getters/setters */
@@ -220,10 +196,48 @@ static PyObject *PyDcc_destroy(PyDcc *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(PyDcc_reject_doc,
+    "?"
+);
+static PyObject *PyDcc_reject(PyDcc *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"server", NULL};
+    PyObject *server = NULL;
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, 
+           &server))
+        return NULL;
+
+    if (!pyirc_server_check(server))
+        return PyErr_Format(PyExc_TypeError, "arg must be IRC server object");
+   
+    dcc_reject(self->data, ((PyIrcServer*)server)->data);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyDcc_close_doc,
+    "Close and destroy DCC connection"
+);
+static PyObject *PyDcc_close(PyDcc *self, PyObject *args)
+{
+    RET_NULL_IF_INVALID(self->data);
+
+    dcc_close(self->data);
+    
+    Py_RETURN_NONE;
+}
+
 /* Methods for object */
 static PyMethodDef PyDcc_methods[] = {
     {"destroy", (PyCFunction)PyDcc_destroy, METH_NOARGS,
         PyDcc_destroy_doc},
+    {"reject", (PyCFunction)PyDcc_reject, METH_VARARGS | METH_KEYWORDS,
+        PyDcc_reject_doc},
+    {"close", (PyCFunction)PyDcc_close, METH_NOARGS,
+        PyDcc_close_doc},
     {NULL}  /* Sentinel */
 };
 

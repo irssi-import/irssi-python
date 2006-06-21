@@ -1,59 +1,53 @@
 #include <Python.h>
 #include "pymodule.h"
 #include "base-objects.h"
-#include "server-object.h"
 #include "irc-server-object.h"
-#include "irc-connect-object.h"
+#include "factory.h"
 #include "pyirssi_irc.h"
 #include "pycore.h"
 #include "pyutils.h"
 
-/* member IDs */
-enum
-{
-    M_IRC_SERVER_REAL_ADDRESS,
-    M_IRC_SERVER_USERMODE,
-    M_IRC_SERVER_USERHOST,
-};
-
 /* cleanup and dealloc inherited from base Server */
 
-static PyObject *PyIrcServer_get(PyIrcServer *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyIrcServer_real_address_doc,
+    "Address the IRC server gives"
+);
+static PyObject *PyIrcServer_real_address_get(PyIrcServer *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
-
     RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->real_address);
+}
 
-    switch (member)
-    {
-        case M_IRC_SERVER_REAL_ADDRESS:
-            RET_AS_STRING_OR_NONE(self->data->real_address);
-        case M_IRC_SERVER_USERMODE:
-            RET_AS_STRING_OR_NONE(self->data->usermode);
-        case M_IRC_SERVER_USERHOST:
-            RET_AS_STRING_OR_NONE(self->data->userhost);
-    }
+PyDoc_STRVAR(PyIrcServer_usermode_doc,
+    "User mode in server"
+);
+static PyObject *PyIrcServer_usermode_get(PyIrcServer *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->usermode);
+}
 
-    /* This shouldn't be reached... but... */
-    return PyErr_Format(PyExc_RuntimeError, "invalid member id, %d", member);
+PyDoc_STRVAR(PyIrcServer_userhost_doc,
+    "Your user host in server"
+);
+static PyObject *PyIrcServer_userhost_get(PyIrcServer *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->userhost);
 }
 
 static PyGetSetDef PyIrcServer_getseters[] = {
-    {"real_address", (getter)PyIrcServer_get, NULL, 
-        "Address the IRC server gives",
-        GINT_TO_POINTER(M_IRC_SERVER_REAL_ADDRESS)},
-
-    {"usermode", (getter)PyIrcServer_get, NULL, 
-        "User mode in server",
-        GINT_TO_POINTER(M_IRC_SERVER_USERMODE)},
-
-    {"userhost", (getter)PyIrcServer_get, NULL, 
-        "Your user host in server",
-        GINT_TO_POINTER(M_IRC_SERVER_USERHOST)},
-
+    {"real_address", (getter)PyIrcServer_real_address_get, NULL,
+        PyIrcServer_real_address_doc, NULL},
+    {"usermode", (getter)PyIrcServer_usermode_get, NULL,
+        PyIrcServer_usermode_doc, NULL},
+    {"userhost", (getter)PyIrcServer_userhost_get, NULL,
+        PyIrcServer_userhost_doc, NULL},
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(get_channels_doc,
     "Return a string of all channels (and keys, if any have them) in server,\n"
     "like '#a,#b,#c,#d x,b_chan_key,x,x' or just '#e,#f,#g'\n"
@@ -181,26 +175,91 @@ static PyObject *PyIrcServer_isupport(PyIrcServer *self, PyObject *args, PyObjec
     RET_AS_STRING_OR_NONE(found);
 }
 
+PyDoc_STRVAR(PyIrcServer_netsplit_find_doc,
+    "Check if nick!address is on the other side of netsplit. Netsplit records\n"
+    "are automatically removed after 30 minutes (current default)..\n"
+);
+static PyObject *PyIrcServer_netsplit_find(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"nick", "address", NULL};
+    char *nick = "";
+    char *address = "";
+    NETSPLIT_REC *ns;
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &nick, &address))
+        return NULL;
+
+    ns = netsplit_find(self->data, nick, address);
+    if (ns)
+        return pynetsplit_new(ns);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyIrcServer_netsplit_find_channel_doc,
+    "Find nick record for nick!address in channel `channel'."
+);
+static PyObject *PyIrcServer_netsplit_find_channel(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"nick", "address", "channel", NULL};
+    char *nick = "";
+    char *address = "";
+    char *channel = "";
+    NETSPLIT_CHAN_REC *nsc;
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &nick, &address, &channel))
+        return NULL;
+
+    nsc = netsplit_find_channel(self->data, nick, address, channel);
+    if (nsc)
+        return pynetsplit_channel_new(nsc);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyIrcServer_notifylist_ison_doc,
+    "Check if nick is on server"
+);
+static PyObject *PyIrcServer_notifylist_ison(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"nick", NULL};
+    char *nick = "";
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &nick))
+        return NULL;
+
+    return PyBool_FromLong(notifylist_ison_server(self->data, nick));
+}
+
 /* Methods for object */
 static PyMethodDef PyIrcServer_methods[] = {
     {"get_channels", (PyCFunction)PyIrcServer_get_channels, METH_NOARGS,
         get_channels_doc},
-        
     {"send_raw", (PyCFunction)PyIrcServer_send_raw, METH_VARARGS | METH_KEYWORDS, 
         send_raw_doc},
-
     {"send_raw_now", (PyCFunction)PyIrcServer_send_raw_now, METH_VARARGS | METH_KEYWORDS, 
         send_raw_now_doc},
-    
     {"send_raw_split", (PyCFunction)PyIrcServer_send_raw_split, METH_VARARGS | METH_KEYWORDS, 
         send_raw_split_doc},
-
     {"ctcp_send_reply", (PyCFunction)PyIrcServer_ctcp_send_reply, METH_VARARGS | METH_KEYWORDS, 
         ctcp_send_reply_doc},
-
     {"isupport", (PyCFunction)PyIrcServer_isupport, METH_VARARGS | METH_KEYWORDS, 
         isupport_doc},
-
+    {"netsplit_find", (PyCFunction)PyIrcServer_netsplit_find, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_netsplit_find_doc},
+    {"netsplit_find_channel", (PyCFunction)PyIrcServer_netsplit_find_channel, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_netsplit_find_channel_doc},
+    {"notifylist_ison", (PyCFunction)PyIrcServer_notifylist_ison, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_notifylist_ison_doc},
     {NULL}  /* Sentinel */
 };
 

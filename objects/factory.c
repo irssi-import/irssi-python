@@ -91,7 +91,31 @@ static int init_objects(void)
 
     if (!dcc_object_init())
         return 0;
+
+    if (!dcc_chat_object_init())
+        return 0;
     
+    if (!dcc_get_object_init())
+        return 0;
+
+    if (!dcc_send_object_init())
+        return 0;
+    
+    if (!netsplit_object_init())
+        return 0;
+
+    if (!netsplit_server_object_init())
+        return 0;
+
+    if (!netsplit_channel_object_init())
+        return 0;
+
+    if (!notifylist_object_init())
+        return 0;
+
+    if (!process_object_init())
+        return 0;
+
     return 1;
 }
 
@@ -164,15 +188,14 @@ static void register_nonchat(void)
     int type;
     int chat_type = 0xffff;
 
-    //FIXME: specify init funcs
     type = module_get_uniq_id_str("DCC", "CHAT");
-    insert_map(type, chat_type, (InitFunc)pydcc_new);
+    insert_map(type, chat_type, (InitFunc)pydcc_chat_new);
 
     type = module_get_uniq_id_str("DCC", "GET");
-    insert_map(type, chat_type, (InitFunc)pydcc_new);
+    insert_map(type, chat_type, (InitFunc)pydcc_get_new);
 
     type = module_get_uniq_id_str("DCC", "SEND");
-    insert_map(type, chat_type, (InitFunc)pydcc_new);
+    insert_map(type, chat_type, (InitFunc)pydcc_send_new);
 
     type = module_get_uniq_id_str("DCC", "SERVER");
     insert_map(type, chat_type, (InitFunc)pydcc_new);

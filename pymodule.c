@@ -686,6 +686,98 @@ static PyObject *py_dcc_get_download_path(PyObject *self, PyObject *args, PyObje
     return pypath;
 }
 
+PyDoc_STRVAR(py_notifies_doc,
+    "Return list of notifies"
+);
+static PyObject *py_notifies(PyObject *self, PyObject *args)
+{
+    return py_irssi_objlist_new(notifies, 1, (InitFunc)pynotifylist_new); 
+}
+
+PyDoc_STRVAR(py_notifylist_add_doc,
+    "notifylist_add(mask, ircnets=None, away_check=0, idle_time_check=0) -> Notifylist object\n"
+    "\n"
+    "Add new item to notify list\n"
+);
+static PyObject *py_notifylist_add(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"mask", "ircnets", "away_check", "idle_check_time", NULL};
+    char *mask = "";
+    char *ircnets = NULL;
+    int away_check = 0;
+    int idle_check_time = 0;
+    NOTIFYLIST_REC *rec;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zii", kwlist, 
+           &mask, &ircnets, &away_check, &idle_check_time))
+        return NULL;
+
+    rec = notifylist_add(mask, ircnets, away_check, idle_check_time);
+    if (rec)
+        return pynotifylist_new(rec);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_notifylist_remove_doc,
+    "Remove notify item from notify list"
+);
+static PyObject *py_notifylist_remove(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"mask", NULL};
+    char *mask = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &mask))
+        return NULL;
+
+    notifylist_remove(mask);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_notifylist_ison_doc,
+    "notifylist_ison(nick, serverlist="") -> IrcServer object\n"
+    "\n"
+    "Check if nick is in IRC. serverlist is a space separated list of server tags.\n"
+    "If it's empty string, all servers will be checked\n"
+);
+static PyObject *py_notifylist_ison(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"nick", "serverlist", NULL};
+    char *nick = "";
+    char *serverlist = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s", kwlist, 
+           &nick, &serverlist))
+        return NULL;
+
+    return py_irssi_chat_new(notifylist_ison(nick, serverlist), 1);
+}
+
+PyDoc_STRVAR(py_notifylist_find_doc,
+    "notifylist_find(mask, ircnet=None) -> Notifylist object\n"
+    "\n"
+    "Find notify\n"
+);
+static PyObject *py_notifylist_find(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"mask", "ircnet", NULL};
+    char *mask = "";
+    char *ircnet = NULL;
+    NOTIFYLIST_REC *rec;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|z", kwlist, 
+           &mask, &ircnet))
+        return NULL;
+
+    rec = notifylist_find(mask, ircnet);
+    if (rec)
+        pynotifylist_new(rec);
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS|METH_KEYWORDS, py_prnt_doc},
     {"get_script", (PyCFunction)py_get_script, METH_NOARGS, py_get_script_doc},
@@ -771,6 +863,16 @@ static PyMethodDef ModuleMethods[] = {
         py_dcc_type2str_doc},
     {"dcc_get_download_path", (PyCFunction)py_dcc_get_download_path, METH_VARARGS | METH_KEYWORDS,
         py_dcc_get_download_path_doc},
+    {"notifies", (PyCFunction)py_notifies, METH_NOARGS,
+        py_notifies_doc},
+    {"notifylist_add", (PyCFunction)py_notifylist_add, METH_VARARGS | METH_KEYWORDS,
+        py_notifylist_add_doc},
+    {"notifylist_remove", (PyCFunction)py_notifylist_remove, METH_VARARGS | METH_KEYWORDS,
+        py_notifylist_remove_doc},
+    {"notifylist_ison", (PyCFunction)py_notifylist_ison, METH_VARARGS | METH_KEYWORDS,
+        py_notifylist_ison_doc},
+    {"notifylist_find", (PyCFunction)py_notifylist_find, METH_VARARGS | METH_KEYWORDS,
+        py_notifylist_find_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

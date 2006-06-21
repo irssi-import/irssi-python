@@ -34,6 +34,7 @@ static void PyServer_dealloc(PyServer *self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
+/* Getters */
 PyDoc_STRVAR(PyServer_connect_time_doc,
     "Time when connect() to server finished"
 );
@@ -203,6 +204,7 @@ static PyGetSetDef PyServer_getseters[] = {
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(print_doc,
     "Print to server\n"
 );

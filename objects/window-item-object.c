@@ -200,6 +200,15 @@ static PyObject *PyWindowItem_destroy(PyWindowItem *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(PyWindowItem_get_dcc_doc,
+    "If item is a query of a =nick, return DCC chat record of nick"
+);
+static PyObject *PyWindowItem_get_dcc(PyWindowItem *self, PyObject *args)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return py_irssi_new(self->data, 1);
+}
+
 /* Methods for object */
 static PyMethodDef PyWindowItem_methods[] = {
     {"prnt", (PyCFunction)PyWindowItem_prnt, METH_VARARGS | METH_KEYWORDS, 
@@ -218,6 +227,8 @@ static PyMethodDef PyWindowItem_methods[] = {
         PyWindowItem_activity_doc},
     {"destroy", (PyCFunction)PyWindowItem_destroy, METH_NOARGS,
         PyWindowItem_destroy_doc},
+    {"get_dcc", (PyCFunction)PyWindowItem_get_dcc, METH_NOARGS,
+        PyWindowItem_get_dcc_doc},
     {NULL}  /* Sentinel */
 };
 

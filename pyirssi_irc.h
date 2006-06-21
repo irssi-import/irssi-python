@@ -12,5 +12,7 @@
 #include "dcc-get.h"
 #include "dcc-send.h"
 #include "dcc-chat.h"
+#include "netsplit.h"
+#include "notifylist.h"
 
 #endif

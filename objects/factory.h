@@ -23,6 +23,14 @@
 #include "logitem-object.h"
 #include "ignore-object.h"
 #include "dcc-object.h"
+#include "dcc-chat-object.h"
+#include "dcc-get-object.h"
+#include "dcc-send-object.h"
+#include "netsplit-object.h"
+#include "netsplit-server-object.h"
+#include "netsplit-channel-object.h"
+#include "notifylist-object.h"
+#include "process-object.h"
 
 int factory_init(void);
 void factory_deinit(void);
