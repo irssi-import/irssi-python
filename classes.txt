@@ -3,8 +3,6 @@ Basic types (source):
         IrssiChatObject/
             Chatnet/                    (core/chatnets.h)
                 IrcChatnet              (irc/core/irc-chatnets.h)     
-            #ServerSetup/               (core/servers-setup.h)
-            #    IrcServerSetup         (irc/core/irc-servers-setup.h) 
             ServerConnect/              (core/servers.h)
                 IrcServerConnect        (irc/core/irc-servers.h) 
             Server/                     (core/servers.h)

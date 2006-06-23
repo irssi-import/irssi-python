@@ -22,6 +22,9 @@ pyobjects.a:
 %.o: %.c
 	$(CC) -c $< $(CFLAGS)
 
+signalmap:
+	python sig2code.py < ~/irssi-0.8.10/docs/signals.txt > pysigmap.h
+
 clean:
 	rm -f *.o *.so
 	cd objects/ && make clean

@@ -773,9 +773,73 @@ static PyObject *py_notifylist_find(PyObject *self, PyObject *args, PyObject *kw
 
     rec = notifylist_find(mask, ircnet);
     if (rec)
-        pynotifylist_new(rec);
+        return pynotifylist_new(rec);
     
     Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_commands_doc,
+    "Return a list of all commands."
+);
+static PyObject *py_commands(PyObject *self, PyObject *args)
+{
+    return py_irssi_objlist_new(commands, 1, (InitFunc)pycommand_new);
+}
+
+PyDoc_STRVAR(py_level2bits_doc,
+    "Level string -> number"
+);
+static PyObject *py_level2bits(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"level", NULL};
+    char *level = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &level))
+        return NULL;
+
+    return PyLong_FromUnsignedLong(level2bits(level));
+}
+
+PyDoc_STRVAR(py_bits2level_doc,
+    "Level number -> string"
+);
+static PyObject *py_bits2level(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"bits", NULL};
+    unsigned bits;
+    char *str;
+    PyObject *ret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist, 
+           &bits))
+        return NULL;
+
+    str = bits2level(bits);
+    if (str)
+    {
+        ret = PyString_FromString(str);
+        g_free(str);
+        return ret;
+    }
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_combine_level_doc,
+    "Combine level number to level string ('+level -level'). Return new level number."
+);
+static PyObject *py_combine_level(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"level", "str", NULL};
+    int level = 0;
+    char *str = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is", kwlist, 
+           &level, &str))
+        return NULL;
+
+    return PyLong_FromUnsignedLong(combine_level(level, str));
 }
 
 static PyMethodDef ModuleMethods[] = {
@@ -873,9 +937,18 @@ static PyMethodDef ModuleMethods[] = {
         py_notifylist_ison_doc},
     {"notifylist_find", (PyCFunction)py_notifylist_find, METH_VARARGS | METH_KEYWORDS,
         py_notifylist_find_doc},
+    {"commands", (PyCFunction)py_commands, METH_NOARGS,
+        py_commands_doc},
+    {"level2bits", (PyCFunction)py_level2bits, METH_VARARGS | METH_KEYWORDS,
+        py_level2bits_doc},
+    {"bits2level", (PyCFunction)py_bits2level, METH_VARARGS | METH_KEYWORDS,
+        py_bits2level_doc},
+    {"combine_level", (PyCFunction)py_combine_level, METH_VARARGS | METH_KEYWORDS,
+        py_combine_level_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
+/*XXX: move to pyloader.c??*/
 /* Traverse stack backwards to find the nearest _script object in globals */
 static PyObject *find_script(void)
 {

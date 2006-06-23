@@ -2,13 +2,26 @@
 #define _PYSIGNALS_H_
 #include <Python.h>
 
-typedef struct
-{
-    char *name;
-    PyObject *handler;
-} PY_COMMAND_REC;
+/* forward */
+struct _PY_SIGNAL_SPEC_REC;
 
-void py_command_bind(const char *category, PY_COMMAND_REC *crec);
-void py_command_unbind(PY_COMMAND_REC *crec);
+typedef struct _PY_SIGNAL_REC
+{
+    struct _PY_SIGNAL_SPEC_REC *signal;
+    char *command; /* NULL if this is signal */
+    PyObject *handler;
+} PY_SIGNAL_REC;
+
+PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func, 
+        const char *category, int priority);
+PY_SIGNAL_REC *pysignals_signal_add(const char *signal, PyObject *func, 
+        int priority);
+void pysignals_command_unbind(PY_SIGNAL_REC *rec);
+void pysignals_signal_remove(PY_SIGNAL_REC *rec);
+void pysignals_remove_generic(PY_SIGNAL_REC *rec);
+int pysignals_register(const char *name, const char *arglist);
+int pysignals_unregister(const char *name);
+void pysignals_init(void);
+void pysignals_deinit(void);
 
 #endif

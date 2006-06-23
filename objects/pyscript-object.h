@@ -3,6 +3,7 @@
 #include <Python.h>
 #include <glib.h>
 
+//FIXME: add list of registered dynamic signal names
 typedef struct {
     PyObject_HEAD
     PyObject *module; /* module object */ 

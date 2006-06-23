@@ -288,6 +288,20 @@ int pyloader_init(void)
     return 1;
 }
 
+static void py_clear_scripts()
+{
+    int i;
+    
+    for (i = 0; i < PyList_Size(script_modules); i++)
+    {
+        PyObject *scr = PyList_GET_ITEM(script_modules, i);
+        pyscript_remove_signals(scr);
+        pyscript_clear_modules(scr);
+    }
+
+    Py_DECREF(script_modules);
+}
+
 void pyloader_deinit(void)
 {
     GSList *node;
@@ -300,7 +314,5 @@ void pyloader_deinit(void)
     g_slist_free(script_paths);
     script_paths = NULL;
 
-    /* script specific resources (cmd + signal handlers) should be removed
-       by the object's destructor */
-    Py_DECREF(script_modules);
+    py_clear_scripts();
 }

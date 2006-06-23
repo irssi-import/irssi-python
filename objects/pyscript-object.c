@@ -65,24 +65,60 @@ static PyObject *PyScript_new(PyTypeObject *type, PyObject *args, PyObject *kwds
     return (PyObject *)self;
 }
 
+//FIXME: add prioriety as arg
+PyDoc_STRVAR(PyScript_command_bind_doc,
+    "Bind a command"
+);
 static PyObject *PyScript_command_bind(PyScript *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"cmd", "func", "category", NULL};
+    static char *kwlist[] = {"cmd", "func", "category", "priority", NULL};
     char *cmd;
     PyObject *func;
     char *category = NULL;
+    int priority = SIGNAL_PRIORITY_DEFAULT; 
     PY_SIGNAL_REC *srec;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|s", kwlist, &cmd, &func, &category))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|si", kwlist, 
+                &cmd, &func, &category, &priority))
         return NULL;
 
     if (!PyCallable_Check(func))
         return PyErr_Format(PyExc_TypeError, "func must be callable");
   
-    srec = py_command_bind(cmd, func, category);
-   
+    srec = pysignals_command_bind(cmd, func, category, priority);
+    if (!srec)
+        return PyErr_Format(PyExc_RuntimeError, "unable to bind command");
+    
     /* add record to internal list*/
-    self->signals = g_slist_append(self->signals, crec);
+    self->signals = g_slist_append(self->signals, srec);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_signal_add_doc,
+    "add signal"
+);
+static PyObject *PyScript_signal_add(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"signal", "func", "category", "priority", NULL};
+    char *signal;
+    PyObject *func;
+    char *category = NULL;
+    int priority = SIGNAL_PRIORITY_DEFAULT; 
+    PY_SIGNAL_REC *srec;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|si", kwlist, 
+                &signal, &func, &category, &priority))
+        return NULL;
+
+    if (!PyCallable_Check(func))
+        return PyErr_Format(PyExc_TypeError, "func must be callable");
+
+    srec = pysignals_signal_add(signal, func, priority);
+    if (!srec)
+        return PyErr_Format(PyExc_KeyError, "unable to find signal, '%s'", signal);
+    
+    self->signals = g_slist_append(self->signals, srec);
 
     Py_RETURN_NONE;
 }
@@ -96,8 +132,10 @@ static PyMemberDef PyScript_members[] = {
 
 /* Methods for object */
 static PyMethodDef PyScript_methods[] = {
-    {"command_bind", (PyCFunction)PyScript_command_bind, 
-        METH_VARARGS | METH_KEYWORDS, "Bind a command"},
+    {"command_bind", (PyCFunction)PyScript_command_bind, METH_VARARGS | METH_KEYWORDS, 
+        PyScript_command_bind_doc},
+    {"signal_add", (PyCFunction)PyScript_signal_add, METH_VARARGS | METH_KEYWORDS,
+        PyScript_signal_add_doc},
     {NULL}  /* Sentinel */
 };
 
@@ -187,15 +225,8 @@ void pyscript_remove_signals(PyObject *script)
     self = (PyScript *) script;
 
     for (node = self->signals; node != NULL; node = node->next) 
-    {
-        PY_SIGNAL_REC *crec = node->data;
-
-        py_command_unbind(crec);
-        g_free(crec->name);
-        Py_DECREF(crec->handler);
-        g_free(crec);
-    }
-   
+        pysignals_remove_generic((PY_SIGNAL_REC *)node->data);
+  
     g_slist_free(self->signals);
     self->signals = NULL;
 }
