@@ -14,20 +14,20 @@
  * scripts can no longer bind to it.
  */
 
-//FIXME: does not handle binding of signals with varying <cmd> text
-
 typedef struct _PY_SIGNAL_SPEC_REC 
 {
     char *name;
     char *arglist;
-    int id;
     int refcount;
     int dynamic;
+    int is_var; /* is this entry a prefix for a variable signal? */
 } PY_SIGNAL_SPEC_REC;
 
 #include "pysigmap.h"
 
+/* hashtable for normal signals, tree for variable signal prefixes. */
 static GHashTable *py_sighash = NULL;
+static GTree *py_sigtree = NULL;
 
 static void py_run_handler(PY_SIGNAL_REC *rec, void **args);
 static void py_sig_proxy(void *p1, void *p2, void *p3, void *p4, void *p5, void *p6);
@@ -39,6 +39,9 @@ static void py_signal_rec_destroy(PY_SIGNAL_REC *sig);
 static PyObject *py_mkstrlist(void *iobj);
 static PyObject *py_i2py(char code, void *iobj);
 static void py_getstrlist(GList **list, PyObject *pylist);
+static int precmp(const char *spec, const char *test);
+static PY_SIGNAL_SPEC_REC *py_signal_lookup(const char *name);
+static void py_signal_remove(PY_SIGNAL_SPEC_REC *sig);
 
 PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func, 
         const char *category, int priority)
@@ -56,18 +59,21 @@ PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func,
 PY_SIGNAL_REC *pysignals_signal_add(const char *signal, PyObject *func, int priority)
 {
     PY_SIGNAL_REC *rec = py_signal_rec_new(signal, func, NULL);
-   
+    char *name;
+
     if (rec == NULL)
         return NULL;
+   
+    name = rec->command? rec->command : rec->signal->name;
     
-    signal_add_full_id(MODULE_NAME, priority, rec->signal->id, 
-            (SIGNAL_FUNC)py_sig_proxy, rec); 
+    signal_add_full(MODULE_NAME, priority, name, (SIGNAL_FUNC)py_sig_proxy, rec); 
 
     return rec;
 }
 
 void pysignals_command_unbind(PY_SIGNAL_REC *rec)
 {
+    g_return_if_fail(rec->is_signal == FALSE);
     g_return_if_fail(rec->command != NULL);
 
     command_unbind_full(rec->command, (SIGNAL_FUNC)py_sig_proxy, rec);
@@ -76,18 +82,22 @@ void pysignals_command_unbind(PY_SIGNAL_REC *rec)
 
 void pysignals_signal_remove(PY_SIGNAL_REC *rec)
 {
-    g_return_if_fail(rec->command == NULL);
+    char *name;
 
-    signal_remove_id(rec->signal->id, (SIGNAL_FUNC)py_sig_proxy, rec);
+    g_return_if_fail(rec->is_signal == TRUE);
+
+    name = rec->command? rec->command : rec->signal->name;
+    
+    signal_remove_full(name, (SIGNAL_FUNC)py_sig_proxy, rec);
     py_signal_rec_destroy(rec);
 }
 
 void pysignals_remove_generic(PY_SIGNAL_REC *rec)
 {
-    if (rec->command)
-        pysignals_command_unbind(rec);
-    else
+    if (rec->is_signal)
         pysignals_signal_remove(rec);
+    else
+        pysignals_command_unbind(rec);
 }
 
 static PyObject *py_mkstrlist(void *iobj)
@@ -303,15 +313,29 @@ static PY_SIGNAL_REC *py_signal_rec_new(const char *signal, PyObject *func, cons
 
     g_return_val_if_fail(func != NULL, NULL);
     
-    spec = g_hash_table_lookup(py_sighash, signal);
+    spec = py_signal_lookup(signal);
     if (!spec)
         return NULL;
 
-    rec = g_new(PY_SIGNAL_REC, 1);
-    rec->command = g_strdup(command);
+    rec = g_new0(PY_SIGNAL_REC, 1);
     rec->signal = spec;
     rec->handler = func;
     Py_INCREF(func);
+
+    if (command)
+    {
+        rec->is_signal = FALSE;
+        rec->command = g_strdup(command);
+    }
+    else 
+    {
+        rec->is_signal = TRUE;
+        /* handle variable signal. requested signal will be longer than spec->name, ie
+         * signal = "var signal POOOM", spec->name = "var signal " 
+         */
+        if (strcmp(signal, spec->name) != 0)
+            rec->command = g_strdup(signal);
+    }
 
     py_signal_ref(spec);
 
@@ -329,7 +353,51 @@ static void py_signal_rec_destroy(PY_SIGNAL_REC *sig)
 
 static void py_signal_add(PY_SIGNAL_SPEC_REC *sig)
 {
-    g_hash_table_insert(py_sighash, sig->name, sig);
+    if (sig->is_var)
+        g_tree_insert(py_sigtree, sig->name, sig);
+    else
+        g_hash_table_insert(py_sighash, sig->name, sig);
+}
+
+static void py_signal_remove(PY_SIGNAL_SPEC_REC *sig)
+{
+    int ret;
+
+    if (sig->is_var)
+        g_tree_remove(py_sigtree, sig->name);
+    else
+    {
+        ret = g_hash_table_remove(py_sighash, sig->name);
+        g_return_if_fail(ret != FALSE);
+    }
+}
+
+static int precmp(const char *spec, const char *test)
+{
+    //printf("precmp(spec,test) -> '%s', '%s'\n", spec, test);
+    
+    while (*spec == *test++)
+        if (*spec++ == '\0')
+            return 0;
+
+    /* Variable event prefix matches (spec must never be empty string)*/
+    /* precmp("var event ", "var event POOOM") -> 0 */
+    if (*spec == '\0' && *(spec-1) == ' ')
+        return 0;
+    
+    return *(const unsigned char *)(test - 1) - *(const unsigned char *)spec; 
+}
+
+static PY_SIGNAL_SPEC_REC *py_signal_lookup(const char *name)
+{
+    PY_SIGNAL_SPEC_REC *ret;
+
+    /* First check the normal signals hash, then check the variable signal prefixes in the tree */
+    ret = g_hash_table_lookup(py_sighash, name);
+    if (!ret)
+        ret = g_tree_search(py_sigtree, (GCompareFunc)precmp, name);
+
+    return ret;
 }
 
 static void py_signal_ref(PY_SIGNAL_SPEC_REC *sig)
@@ -342,6 +410,7 @@ static void py_signal_ref(PY_SIGNAL_SPEC_REC *sig)
 static int py_signal_unref(PY_SIGNAL_SPEC_REC *sig)
 {
     g_return_val_if_fail(sig->refcount >= 1, 0);
+    g_return_val_if_fail(sig->refcount > 1 || !sig->dynamic, 0);
 
     sig->refcount--;
 
@@ -349,7 +418,7 @@ static int py_signal_unref(PY_SIGNAL_SPEC_REC *sig)
     {
         if (sig->dynamic)
         {
-            g_hash_table_remove(py_sighash, sig->name);
+            py_signal_remove(sig);
 
             /* freeing name also takes care of the key */
             g_free(sig->name);
@@ -365,22 +434,22 @@ static int py_signal_unref(PY_SIGNAL_SPEC_REC *sig)
     return 0;
 }
 
-/* returns 0 when signal already exists, but with different args */
+/* returns 0 when signal already exists, but with different args. */
 int pysignals_register(const char *name, const char *arglist)
 {
     PY_SIGNAL_SPEC_REC *spec;
 
-    spec = g_hash_table_lookup(py_sighash, name);
+    spec = py_signal_lookup(name);
     if (!spec)
     {
         spec = g_new0(PY_SIGNAL_SPEC_REC, 1);
+        spec->is_var = name[strlen(name)-1] == ' '; /* trailing space means signal prefix */
         spec->dynamic = 1;
         spec->refcount = 0;
         spec->name = g_strdup(name);
         spec->arglist = g_strdup(arglist);
-        spec->id = signal_get_uniq_id(name);
-
-        g_hash_table_insert(py_sighash, spec->name, spec);
+        
+        py_signal_add(spec);
     }
     else if (strcmp(spec->arglist, arglist) != 0)
         return 0;
@@ -395,7 +464,7 @@ int pysignals_unregister(const char *name)
 {
     PY_SIGNAL_SPEC_REC *spec;
 
-    spec = g_hash_table_lookup(py_sighash, name);
+    spec = py_signal_lookup(name);
     if (!spec)
         return 0;
 
@@ -408,14 +477,15 @@ void pysignals_init(void)
     int i;
     
     g_return_if_fail(py_sighash == NULL);
+    g_return_if_fail(py_sigtree == NULL);
 
-    py_sighash = g_hash_table_new((GHashFunc)g_str_hash, (GCompareFunc)g_str_equal);
+    py_sigtree = g_tree_new((GCompareFunc)strcmp);
+    py_sighash = g_hash_table_new(g_str_hash, g_str_equal);
 
     for (i = 0; i < py_sigmap_len(); i++)
     {
         py_sigmap[i].refcount = 1;
         py_sigmap[i].dynamic = 0;
-        py_sigmap[i].id = signal_get_uniq_id(py_sigmap[i].name);
         py_signal_add(&py_sigmap[i]);
     }
 }
@@ -425,16 +495,22 @@ static int py_check_sig(char *key, PY_SIGNAL_SPEC_REC *value, void *data)
     /* shouldn't need to deallocate any script recs -- all remaining at 
        this point should not be dynamic. non dynamic signals should have
        no outstanding references */
-    g_return_val_if_fail(value->dynamic == 0, TRUE);
-    g_return_val_if_fail(value->refcount == 1, TRUE);
+    g_return_val_if_fail(value->dynamic == 0, FALSE);
+    g_return_val_if_fail(value->refcount == 1, FALSE);
 
-    return TRUE;
+    return FALSE;
 }
 
 void pysignals_deinit(void)
 {
     g_return_if_fail(py_sighash != NULL);
-    g_hash_table_foreach_remove(py_sighash, (GHRFunc)py_check_sig, NULL); 
+    g_return_if_fail(py_sigtree != NULL);
+    
+    g_tree_foreach(py_sigtree, (GTraverseFunc)py_check_sig, NULL); 
+    g_hash_table_foreach_remove(py_sighash, (GHRFunc)py_check_sig, NULL);
+
+    g_tree_destroy(py_sigtree);
     g_hash_table_destroy(py_sighash);
+    py_sigtree = NULL;
     py_sighash = NULL;
 }

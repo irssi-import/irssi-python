@@ -35,34 +35,10 @@ MSGLEVEL_NO_ACT       = 0x2000000
 MSGLEVEL_NEVER        = 0x4000000
 MSGLEVEL_LASTLOG      = 0x8000000
 
-"""
-#Link Irssi functions and objects
-get_script = _irssi.get_script
-prnt = _irssi.prnt
-chatnets = _irssi.chatnets
-servers = _irssi.servers
-reconnects = _irssi.reconnects
-chatnet_find = _irssi.chatnet_find
-windows = _irssi.windows
-
-Script = _irssi.Script
-Channel = _irssi.Channel
-Query = _irssi.Query
-WindowItem = _irssi.WindowItem
-Window = _irssi.Window
-Server = _irssi.Server
-Connect = _irssi.Connect
-IrcServer = _irssi.IrcServer
-IrcConnect = _irssi.IrcConnect
-IrcChannel = _irssi.IrcChannel
-Ban = _irssi.Ban
-Nick = _irssi.Nick
-Chatnet = _irssi.Chatnet
-Reconnect = _irssi.Reconnect
-"""
-
 def command_bind(*args, **kwargs):
     """ see Script.command_bind """
     get_script().command_bind(*args, **kwargs)
 
-
+def signal_add(*args, **kwargs):
+    """ see Script.signal_add """
+    get_script().signal_add(*args, **kwargs)

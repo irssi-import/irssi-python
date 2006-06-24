@@ -8,8 +8,9 @@ struct _PY_SIGNAL_SPEC_REC;
 typedef struct _PY_SIGNAL_REC
 {
     struct _PY_SIGNAL_SPEC_REC *signal;
-    char *command; /* NULL if this is signal */
+    char *command; /* used for command and variable signal */
     PyObject *handler;
+    int is_signal;
 } PY_SIGNAL_REC;
 
 PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func, 

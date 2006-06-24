@@ -102,17 +102,22 @@ def main():
 
     for ln in sys.stdin:
         ln = ln.strip()
-        m = re.match('^\"([^\"]+)\",(.*)$', ln)
+        m = re.match('^\"([^\"]+)\"[^,]*,(.*)$', ln)
         if not m: continue
 
         signal, args = m.groups()
         
         if signal.startswith('script '): continue
+        if signal == 'command ': continue
         
         argv = [transcode(a.strip()) for a in args.split(',')]
         argv = ''.join(argv)
 
-        print '  {"%s", "%s", 0, 0, 0},' % (signal, argv)
+        is_var = 0
+        if signal[-1] == ' ':
+            is_var = 1
+
+        print '  {"%s", "%s", 0, 0, %d},' % (signal, argv, is_var)
     
     print "  {NULL}"
     print "};"
