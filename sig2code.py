@@ -108,7 +108,7 @@ def main():
         signal, args = m.groups()
         
         if signal.startswith('script '): continue
-        if signal == 'command ': continue
+        #if signal == 'command ': continue
         
         argv = [transcode(a.strip()) for a in args.split(',')]
         argv = ''.join(argv)

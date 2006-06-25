@@ -11,7 +11,9 @@
  * Binding to the signal also increments its reference count. Likewise,
  * unregistering or unbinding a dynamic signal will decrement its refcount.
  * When refcount hits 0, the dynamic signal is removed from the list, and
- * scripts can no longer bind to it.
+ * scripts can no longer bind to it. Built-in signals in the sigmap are
+ * never removed; it is an error for the refcount of any such signal entry 
+ * to drop to 0.
  */
 
 typedef struct _PY_SIGNAL_SPEC_REC 
@@ -24,6 +26,8 @@ typedef struct _PY_SIGNAL_SPEC_REC
 } PY_SIGNAL_SPEC_REC;
 
 #include "pysigmap.h"
+
+#define SIGNAME(sig) (sig->command? sig->command : sig->signal->name)
 
 /* hashtable for normal signals, tree for variable signal prefixes. */
 static GHashTable *py_sighash = NULL;
@@ -38,6 +42,7 @@ static PY_SIGNAL_REC *py_signal_rec_new(const char *signal, PyObject *func, cons
 static void py_signal_rec_destroy(PY_SIGNAL_REC *sig);
 static PyObject *py_mkstrlist(void *iobj);
 static PyObject *py_i2py(char code, void *iobj);
+static void *py_py2i(char code, PyObject *pobj, int arg);
 static void py_getstrlist(GList **list, PyObject *pylist);
 static int precmp(const char *spec, const char *test);
 static PY_SIGNAL_SPEC_REC *py_signal_lookup(const char *name);
@@ -55,20 +60,40 @@ PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func,
     return rec;
 }
 
+int pysignals_command_bind_list(GSList **list, const char *command, 
+        PyObject *func, const char *category, int priority)
+{
+    PY_SIGNAL_REC *rec = pysignals_command_bind(command, func, category, priority);
+    if (!rec)
+        return 0;
+
+    *list = g_slist_append(*list, rec);
+    return 1;
+}
+
 /* return NULL if signal is invalid */
 PY_SIGNAL_REC *pysignals_signal_add(const char *signal, PyObject *func, int priority)
 {
     PY_SIGNAL_REC *rec = py_signal_rec_new(signal, func, NULL);
-    char *name;
 
     if (rec == NULL)
         return NULL;
    
-    name = rec->command? rec->command : rec->signal->name;
-    
-    signal_add_full(MODULE_NAME, priority, name, (SIGNAL_FUNC)py_sig_proxy, rec); 
+    signal_add_full(MODULE_NAME, priority, SIGNAME(rec), 
+            (SIGNAL_FUNC)py_sig_proxy, rec); 
 
     return rec;
+}
+
+int pysignals_signal_add_list(GSList **list, const char *signal, 
+        PyObject *func, int priority)
+{
+    PY_SIGNAL_REC *rec = pysignals_signal_add(signal, func, priority);
+    if (!rec)
+        return 0;
+
+    *list = g_slist_append(*list, rec);
+    return 1;
 }
 
 void pysignals_command_unbind(PY_SIGNAL_REC *rec)
@@ -82,13 +107,9 @@ void pysignals_command_unbind(PY_SIGNAL_REC *rec)
 
 void pysignals_signal_remove(PY_SIGNAL_REC *rec)
 {
-    char *name;
-
     g_return_if_fail(rec->is_signal == TRUE);
 
-    name = rec->command? rec->command : rec->signal->name;
-    
-    signal_remove_full(name, (SIGNAL_FUNC)py_sig_proxy, rec);
+    signal_remove_full(SIGNAME(rec), (SIGNAL_FUNC)py_sig_proxy, rec);
     py_signal_rec_destroy(rec);
 }
 
@@ -98,6 +119,42 @@ void pysignals_remove_generic(PY_SIGNAL_REC *rec)
         pysignals_signal_remove(rec);
     else
         pysignals_command_unbind(rec);
+}
+
+/* returns 1 when found and removed successfully */
+int pysignals_remove_search(GSList **siglist, const char *name, 
+        PyObject *func, PSG_TYPE type)
+{
+    GSList *node;
+
+    for (node = *siglist; node != NULL; node = node->next)
+    {
+        PY_SIGNAL_REC *sig = node->data;
+
+        if ((sig->is_signal && type == PSG_COMMAND) ||
+                (!sig->is_signal && type == PSG_SIGNAL))
+            continue;
+        
+        if ((strcmp(SIGNAME(sig), name) == 0) && 
+                (func == NULL || func == sig->handler))
+        {
+            pysignals_remove_generic(sig);
+            *siglist = g_slist_delete_link(*siglist, node);
+
+            /* deleting node won't harm iteration because it quits here */
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void pysignals_remove_list(GSList *siglist)
+{
+    GSList *node = siglist;
+
+    for (node = siglist; node != NULL; node = node->next)
+        pysignals_remove_generic(node->data);
 }
 
 static PyObject *py_mkstrlist(void *iobj)
@@ -197,6 +254,117 @@ static PyObject *py_i2py(char code, void *iobj)
     }
 
     return PyErr_Format(PyExc_TypeError, "unknown code %c", code);
+}
+
+/* PyObject -> irssi obj*/
+static void *py_py2i(char code, PyObject *pobj, int arg)
+{
+    char *type;
+
+    if (pobj == Py_None)
+        return NULL;
+
+    switch (code)
+    {
+        case 's':
+            type = "str";
+            if (PyString_Check(pobj)) return PyString_AsString(pobj);
+            break;
+        case 'i':
+            type = "int";
+            if (PyInt_Check(pobj)) return (void*)PyInt_AsLong(pobj);
+            break;
+
+        case 'L': /* list of nicks */
+            /*FIXME*/
+            return NULL;
+
+        case 'c':
+            type = "Chatnet";
+            if (pychatnet_check(pobj)) return DATA(pobj);
+            break;
+        case 'S':
+            type = "Server";
+            if (pyserver_check(pobj)) return DATA(pobj);
+            break;
+        case 'C':
+            type = "Channel";
+            if (pychannel_check(pobj)) return DATA(pobj);
+            break;
+        case 'q':
+            type = "Query";
+            if (pyquery_check(pobj)) return DATA(pobj);
+            break;
+        case 'n':
+            type = "Nick";
+            if (pynick_check(pobj)) return DATA(pobj);
+            break;
+        case 'W':
+            type = "WindowItem";
+            if (pywindow_item_check(pobj)) return DATA(pobj);
+            break;
+
+        case 'd':
+            type = "DCC";
+            if (pydcc_check(pobj)) return DATA(pobj);
+            break;
+
+        case 'r':
+            type = "Reconnect";
+            if (pyreconnect_check(pobj)) return DATA(pobj);
+            break;
+        case 'o':
+            type = "Command";
+            if (pycommand_check(pobj)) return DATA(pobj);
+            break;
+        case 'l':
+            type = "Log";
+            if (pylog_check(pobj)) return DATA(pobj);
+            break;
+        case 'a':
+            type = "Rawlog";
+            if (pyrawlog_check(pobj)) return DATA(pobj);
+            break;
+        case 'g':
+            type = "Ignore";
+            if (pyignore_check(pobj)) return DATA(pobj);
+            break;
+        case 'b':
+            type = "Ban";
+            if (pyban_check(pobj)) return DATA(pobj);
+            break;
+        case 'N':
+            type = "Netsplit";
+            if (pynetsplit_check(pobj)) return DATA(pobj);
+            break;
+        case 'e':
+            type = "NetsplitServer";
+            if (pynetsplit_server_check(pobj)) return DATA(pobj);
+            break;
+        case 'O':
+            type = "Notifylist";
+            if (pynotifylist_check(pobj)) return DATA(pobj);
+            break;
+        case 'p':
+            type = "Process";
+            if (pyprocess_check(pobj)) return DATA(pobj);
+            break;
+        case 't':
+            type = "TextDest";
+            if (pytextdest_check(pobj)) return DATA(pobj);
+            break;
+        case 'w':
+            type = "Window";
+            if (pywindow_check(pobj)) return DATA(pobj);
+            break;
+        default:
+            PyErr_Format(PyExc_TypeError, "don't know type code %c", code);
+            return NULL;
+    }
+
+    PyErr_Format(PyExc_TypeError, "expected type %s for arg %d, but got %s", 
+        type, arg, pobj->ob_type->tp_name);
+    return NULL;
 }
 
 static void py_getstrlist(GList **list, PyObject *pylist)
@@ -305,6 +473,40 @@ static void py_sig_proxy(void *p1, void *p2, void *p3, void *p4, void *p5, void 
     py_run_handler(rec, args);
 }
 
+int pysignals_emit(const char *signal, PyObject *argtup)
+{
+    PY_SIGNAL_SPEC_REC *spec;
+    void *args[6];
+    char *arglist;
+    int i;
+    int maxargs;
+
+    memset(args, 0, sizeof args);
+
+    spec = py_signal_lookup(signal);
+    if (!spec)
+    {
+        PyErr_Format(PyExc_KeyError, "signal not found");
+        return 0;
+    }
+
+    arglist = spec->arglist;
+    maxargs = strlen(arglist);
+
+    for (i = 0; i < maxargs && i+1 < PyTuple_Size(argtup); i++)
+    {
+        args[i] = py_py2i(arglist[i], PyTuple_GET_ITEM(argtup, i+1), i+1);
+        if (PyErr_Occurred()) /* XXX: any cleanup needed? */
+            return 0;
+    }
+
+    signal_emit(signal, maxargs, 
+            args[0], args[1], args[2],   
+            args[3], args[4], args[5]);
+
+    return 1;
+}
+
 /* returns NULL if signal is invalid, incr reference to func */
 static PY_SIGNAL_REC *py_signal_rec_new(const char *signal, PyObject *func, const char *command)
 {
@@ -345,7 +547,6 @@ static PY_SIGNAL_REC *py_signal_rec_new(const char *signal, PyObject *func, cons
 static void py_signal_rec_destroy(PY_SIGNAL_REC *sig)
 {
     py_signal_unref(sig->signal);
-
     Py_DECREF(sig->handler);
     g_free(sig->command);
     g_free(sig);
@@ -374,8 +575,6 @@ static void py_signal_remove(PY_SIGNAL_SPEC_REC *sig)
 
 static int precmp(const char *spec, const char *test)
 {
-    //printf("precmp(spec,test) -> '%s', '%s'\n", spec, test);
-    
     while (*spec == *test++)
         if (*spec++ == '\0')
             return 0;
@@ -410,23 +609,18 @@ static void py_signal_ref(PY_SIGNAL_SPEC_REC *sig)
 static int py_signal_unref(PY_SIGNAL_SPEC_REC *sig)
 {
     g_return_val_if_fail(sig->refcount >= 1, 0);
-    g_return_val_if_fail(sig->refcount > 1 || !sig->dynamic, 0);
+    g_return_val_if_fail(sig->refcount > 1 || sig->dynamic, 0);
 
     sig->refcount--;
 
     if (sig->refcount == 0)
     {
-        if (sig->dynamic)
-        {
-            py_signal_remove(sig);
+        py_signal_remove(sig);
 
-            /* freeing name also takes care of the key */
-            g_free(sig->name);
-            g_free(sig->arglist);
-            g_free(sig);
-        }
-       
-        /* non-dynamic signals are not removed */
+        /* freeing name also takes care of the key */
+        g_free(sig->name);
+        g_free(sig->arglist);
+        g_free(sig);
 
         return 1;
     }
@@ -434,16 +628,21 @@ static int py_signal_unref(PY_SIGNAL_SPEC_REC *sig)
     return 0;
 }
 
-/* returns 0 when signal already exists, but with different args. */
+/* returns 0 when signal already exists, but with different args, or when
+   similar signal prefix is already present. */
 int pysignals_register(const char *name, const char *arglist)
 {
+    int len;
     PY_SIGNAL_SPEC_REC *spec;
 
+    len = strlen(name);
+    g_return_val_if_fail(len > 0, 0);
+    
     spec = py_signal_lookup(name);
     if (!spec)
     {
         spec = g_new0(PY_SIGNAL_SPEC_REC, 1);
-        spec->is_var = name[strlen(name)-1] == ' '; /* trailing space means signal prefix */
+        spec->is_var = name[len-1] == ' '; /* trailing space means signal prefix */
         spec->dynamic = 1;
         spec->refcount = 0;
         spec->name = g_strdup(name);
@@ -451,7 +650,7 @@ int pysignals_register(const char *name, const char *arglist)
         
         py_signal_add(spec);
     }
-    else if (strcmp(spec->arglist, arglist) != 0)
+    else if (strcmp(spec->arglist, arglist) || strcmp(spec->name, name))
         return 0;
 
     spec->refcount++;
@@ -501,6 +700,7 @@ static int py_check_sig(char *key, PY_SIGNAL_SPEC_REC *value, void *data)
     return FALSE;
 }
 
+/* XXX: remember to remove all scripts before calling this deinit */
 void pysignals_deinit(void)
 {
     g_return_if_fail(py_sighash != NULL);

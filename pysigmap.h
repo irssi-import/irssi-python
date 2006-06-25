@@ -14,6 +14,7 @@ static PY_SIGNAL_SPEC_REC py_sigmap[] = {
   {"error command", "is", 0, 0, 0},
   {"send command", "sSW", 0, 0, 0},
   {"send text", "sSW", 0, 0, 0},
+  {"command ", "sSW", 0, 0, 1},
   {"default command", "sSW", 0, 0, 0},
   {"ignore created", "g", 0, 0, 0},
   {"ignore destroyed", "g", 0, 0, 0},

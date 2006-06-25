@@ -5,6 +5,7 @@
 #include "pyscript-object.h"
 #include "factory.h"
 #include "pyutils.h"
+#include "pysignals.h"
 
 /*
  * This module is some what different than the Perl's.
@@ -842,6 +843,58 @@ static PyObject *py_combine_level(PyObject *self, PyObject *args, PyObject *kwds
     return PyLong_FromUnsignedLong(combine_level(level, str));
 }
 
+PyDoc_STRVAR(py_signal_emit_doc,
+    "signal_emit(signal, *args) -> None\n"
+    "\n"
+    "Emit an Irssi signal with up to 6 arguments\n"
+);
+static PyObject *py_signal_emit(PyObject *self, PyObject *args)
+{
+    PyObject *pysig;
+
+    if (PyTuple_Size(args) < 1 || PyTuple_Size(args) > SIGNAL_MAX_ARGUMENTS)
+        return PyErr_Format(PyExc_TypeError, "need at least one argument for signal");
+
+    pysig = PyTuple_GET_ITEM(args, 0);
+    if (!PyString_Check(pysig))
+        return PyErr_Format(PyExc_TypeError, "signal must be string");
+    
+    if (!pysignals_emit(PyString_AS_STRING(pysig), args))
+        return NULL;
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_signal_stop_doc,
+    "signal_stop() -> None\n"
+    "\n"
+    "Stop the signal that's currently being emitted.\n"
+);
+static PyObject *py_signal_stop(PyObject *self, PyObject *args)
+{
+    signal_stop();
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_signal_stop_by_name_doc,
+    "signal_stop_by_name(signal) -> None\n"
+    "\n"
+    "Stop the signal, 'signal', thats currently being emitted by name\n"
+);
+static PyObject *py_signal_stop_by_name(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"signal", NULL};
+    char *signal = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &signal))
+        return NULL;
+
+    signal_stop_by_name(signal);
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS|METH_KEYWORDS, py_prnt_doc},
     {"get_script", (PyCFunction)py_get_script, METH_NOARGS, py_get_script_doc},
@@ -945,6 +998,12 @@ static PyMethodDef ModuleMethods[] = {
         py_bits2level_doc},
     {"combine_level", (PyCFunction)py_combine_level, METH_VARARGS | METH_KEYWORDS,
         py_combine_level_doc},
+    {"signal_emit", (PyCFunction)py_signal_emit, METH_VARARGS,
+        py_signal_emit_doc},
+    {"signal_stop", (PyCFunction)py_signal_stop, METH_NOARGS,
+        py_signal_stop_doc},
+    {"signal_stop_by_name", (PyCFunction)py_signal_stop_by_name, METH_VARARGS | METH_KEYWORDS,
+        py_signal_stop_by_name_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

@@ -3,13 +3,13 @@
 #include <Python.h>
 #include <glib.h>
 
-//FIXME: add list of registered dynamic signal names
 typedef struct {
     PyObject_HEAD
     PyObject *module; /* module object */ 
     PyObject *argv;  /* list of argument strings from the load command */
     PyObject *modules; /* dict of imported modules for script */
     GSList *signals; /* list of bound signals and commands */
+    GSList *registered_signals; /* list of signal names registered */
 } PyScript;
 
 extern PyTypeObject PyScriptType;

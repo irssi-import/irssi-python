@@ -20,6 +20,15 @@
     type *data;                 \
     int cleanup_installed; 
 
+/* to access data from any irssi object */
+typedef struct
+{
+    PyObject_HEAD
+    void *data;
+} PyIrssiObject;
+
+#define DATA(obj) (((PyIrssiObject *)obj)->data)
+
 /* base for classes with a type */
 typedef struct
 {
