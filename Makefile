@@ -23,7 +23,10 @@ pyobjects.a:
 	$(CC) -c $< $(CFLAGS)
 
 signalmap:
-	python sig2code.py < ~/irssi-0.8.10/docs/signals.txt > pysigmap.h
+	awk -f sig2code.awk ~/irssi-0.8.10/docs/signals.txt > pysigmap.h
+
+constants:
+	awk -f constants.awk constants.txt > pyconstants.h
 
 clean:
 	rm -f *.o *.so

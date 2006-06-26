@@ -266,6 +266,7 @@ static void *py_py2i(char code, PyObject *pobj, int arg)
 
     switch (code)
     {
+        /* XXX: string doesn't (necssarily) persist */
         case 's':
             type = "str";
             if (PyString_Check(pobj)) return PyString_AsString(pobj);
