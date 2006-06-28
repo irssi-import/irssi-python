@@ -35,6 +35,7 @@ int pysignals_remove_search(GSList **siglist, const char *name,
         PyObject *func, PSG_TYPE type);
 void pysignals_remove_list(GSList *siglist);
 int pysignals_emit(const char *signal, PyObject *argtup);
+int pysignals_continue(PyObject *argtup);
 int pysignals_register(const char *name, const char *arglist);
 int pysignals_unregister(const char *name);
 void pysignals_init(void);

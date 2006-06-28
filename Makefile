@@ -11,7 +11,7 @@ CFLAGS = -fpic -ggdb -Wall -I$(PYTHON) -I$(IRSSI) -I$(IRSSI)/src \
 
 LDFLAGS = -fpic /usr/lib/libpython2.4.so
 
-OBJ = pycore.o pyutils.o pymodule.o pyloader.o pysignals.o 
+OBJ = pycore.o pyutils.o pymodule.o pyloader.o pysignals.o pysource.o
 
 pyirssi: pyobjects.a $(OBJ)
 	$(CC) -shared -o libirssi_python.so $(OBJ) objects/pyobjects.a $(LDFLAGS)

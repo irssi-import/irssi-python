@@ -4,6 +4,7 @@
 #include "pyirssi.h"
 #include "pysignals.h"
 #include "pymodule.h"
+#include "pysource.h"
 
 /* handle cycles...
    Can't think of any reason why the user would put script into one of the lists
@@ -31,7 +32,8 @@ static void PyScript_dealloc(PyScript* self)
 {
     PyScript_clear(self);
     pyscript_remove_signals((PyObject*)self);
-    
+    pyscript_remove_sources((PyObject*)self);
+
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -265,6 +267,72 @@ static PyObject *PyScript_signal_unregister(PyScript *self, PyObject *args, PyOb
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(PyScript_timeout_add_doc,
+    "timeout_add(msecs, func, data=None, once=False) -> int source handle\n"
+);
+static PyObject *PyScript_timeout_add(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"msecs", "func", "data", "once", NULL};
+    int msecs = 0;
+    PyObject *func = NULL;
+    PyObject *data = NULL;
+    int once = 0;
+    int ret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO|Oi", kwlist, 
+           &msecs, &func, &data, &once))
+        return NULL;
+
+    if (msecs < 10)
+        return PyErr_Format(PyExc_ValueError, "msecs must be at least 10");
+    
+    ret = pysource_timeout_add_list(&self->sources, msecs, func, data, once);
+
+    return PyInt_FromLong(ret);
+}
+
+PyDoc_STRVAR(PyScript_input_add_doc,
+    "input_add(fd, func, data=None, once=False, condition=G_INPUT_READ) -> int source tag\n"
+);
+static PyObject *PyScript_input_add(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"fd", "func", "data", "once", "condition", NULL};
+    int fd = 0;
+    PyObject *func = NULL;
+    PyObject *data = NULL;
+    int once = 0;
+    int condition = G_INPUT_READ;
+    int ret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO|Oii", kwlist, 
+           &fd, &func, &data, &once, &condition))
+        return NULL;
+
+    ret = pysource_input_add_list(&self->sources, fd, condition, func, data, once);
+
+    return PyInt_FromLong(ret);
+}
+
+PyDoc_STRVAR(PyScript_source_remove_doc,
+    "source_remove(tag) -> None\n"
+    "\n"
+    "Remove IO or timeout source by tag\n"
+);
+static PyObject *PyScript_source_remove(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"tag", NULL};
+    int tag = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, 
+           &tag))
+        return NULL;
+
+    if (!pysource_remove_tag(&self->sources, tag))
+        return PyErr_Format(PyExc_KeyError, "source tag not found");
+    
+    Py_RETURN_NONE;
+}
+
 /* Methods for object */
 static PyMethodDef PyScript_methods[] = {
     {"command_bind", (PyCFunction)PyScript_command_bind, METH_VARARGS | METH_KEYWORDS, 
@@ -279,6 +347,12 @@ static PyMethodDef PyScript_methods[] = {
         PyScript_signal_register_doc},
     {"signal_unregister", (PyCFunction)PyScript_signal_unregister, METH_VARARGS | METH_KEYWORDS,
         PyScript_signal_unregister_doc},
+    {"timeout_add", (PyCFunction)PyScript_timeout_add, METH_VARARGS | METH_KEYWORDS,
+        PyScript_timeout_add_doc},
+    {"input_add", (PyCFunction)PyScript_input_add, METH_VARARGS | METH_KEYWORDS,
+        PyScript_input_add_doc},
+    {"source_remove", (PyCFunction)PyScript_source_remove, METH_VARARGS | METH_KEYWORDS,
+        PyScript_source_remove_doc},
     {NULL}  /* Sentinel */
 };
 
@@ -388,6 +462,19 @@ void pyscript_remove_signals(PyObject *script)
 
     g_slist_free(self->registered_signals);
     self->registered_signals = NULL;
+}
+
+void pyscript_remove_sources(PyObject *script)
+{
+    PyScript *self;
+
+    g_return_if_fail(pyscript_check(script));
+
+    self = (PyScript *) script;
+
+    pysource_remove_list(self->sources);
+    g_slist_free(self->sources);
+    self->sources = NULL;
 }
 
 void pyscript_clear_modules(PyObject *script)

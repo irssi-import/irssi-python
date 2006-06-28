@@ -201,6 +201,7 @@ int pyloader_unload_script(const char *name)
     PySys_WriteStdout("unload %s, script -> 0x%x\n", name, script);
     
     pyscript_remove_signals(script);
+    pyscript_remove_sources(script);
     pyscript_clear_modules(script);
 
     if (PySequence_DelItem(script_modules, id) < 0)
@@ -296,6 +297,7 @@ static void py_clear_scripts()
     {
         PyObject *scr = PyList_GET_ITEM(script_modules, i);
         pyscript_remove_signals(scr);
+        pyscript_remove_sources(scr);
         pyscript_clear_modules(scr);
     }
 

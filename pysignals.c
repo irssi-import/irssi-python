@@ -4,8 +4,32 @@
 #include "factory.h"
 
 /* NOTE:
- * Signals must be registered to be accessible to Python scripts.
+ * There are two different records used to store signal related data:
+ * PY_SIGNAL_SPEC_REC and PY_SIGNAL_REC. Each SPEC_REC declares a "plain"
+ * signal, or a type of "variable" signal. 
  *
+ * Plain signals are emitted by Irssi the same way every time, using the 
+ * same text. They are never extended or altered in any way. Plain signals 
+ * make up the vast majority of Irssi signals. These include (some random 
+ * examples): "beep", "printtext", "log new", "ban new", etc. 
+ *
+ * Variable signals are emitted by joining a common prefix with text that
+ * varies from emit to emit. These are signals that have a "<cmd>" suffix
+ * in Irssi's signal listing. irssi-python uses the trailing space to 
+ * distinguish between plain signals and variable signals. Example prefixes:
+ * "redir ", "command ", "event ". "command nick" would be emitted when the
+ * user types /nick yournick at the prompt.
+ *
+ * While PY_SIGNAL_SPEC_REC stores data about each individual signal,
+ * PY_SIGNAL_REC stores data about each consumer of a signal (or command). 
+ * A listing of SPEC_REC entries is stored globally in this module for each 
+ * signal known to irssi-python. Each Script holds a list PY_SIGNAL_REC entries
+ * to remember signals and commands bound by the script. This allows for easy 
+ * cleanup when the script is unloaded. The PY_SIGNAL_REC data includes 
+ * references to a callable PyObject and a PY_SIGNAL_SPEC_REC entry for the 
+ * signal.
+ *
+ * Signals must be registered to be accessible to Python scripts.
  * Registering a dynamic signal adds a new SPEC_REC with a refcount of 1.
  * If another script registers the same signal, refcount is incremented.
  * Binding to the signal also increments its reference count. Likewise,
@@ -28,6 +52,26 @@ typedef struct _PY_SIGNAL_SPEC_REC
 #include "pysigmap.h"
 
 #define SIGNAME(sig) (sig->command? sig->command : sig->signal->name)
+/* This macro is useful for PY_SIGNAL_REC entries bound to "variable" signals,
+ * whose names extend the name prefix stored in the SPEC_REC entry.
+ * 
+ * Example: 
+ *    sig->command == "command nick"
+ *    sig->signal->name == "command "
+ * 
+ * The exact signal text differs from the prefix, so the text must be stored
+ * separately in each PY_SIGNAL_REC entry.
+ * 
+ * However, entries for "plain" signals do not require any extra data stored,
+ * so sig->command is NULL.
+ * 
+ * Example:
+ *     sig->command == NULL;
+ *     sig->signal->name == "massjoin";
+ * 
+ * "massjoin" is not a prefix for any signal, so any PY_SIGNAL_REC 
+ * referencing the "massjoin" SPEC_REC entry will have a NULL command.
+ */
 
 /* hashtable for normal signals, tree for variable signal prefixes. */
 static GHashTable *py_sighash = NULL;
@@ -42,11 +86,12 @@ static PY_SIGNAL_REC *py_signal_rec_new(const char *signal, PyObject *func, cons
 static void py_signal_rec_destroy(PY_SIGNAL_REC *sig);
 static PyObject *py_mkstrlist(void *iobj);
 static PyObject *py_i2py(char code, void *iobj);
-static void *py_py2i(char code, PyObject *pobj, int arg);
+static void *py_py2i(char code, PyObject *pobj, int arg, const char *signal);
 static void py_getstrlist(GList **list, PyObject *pylist);
 static int precmp(const char *spec, const char *test);
 static PY_SIGNAL_SPEC_REC *py_signal_lookup(const char *name);
 static void py_signal_remove(PY_SIGNAL_SPEC_REC *sig);
+static int py_convert_args(void **args, PyObject *argtup, const char *signal);
 
 PY_SIGNAL_REC *pysignals_command_bind(const char *cmd, PyObject *func, 
         const char *category, int priority)
@@ -257,7 +302,7 @@ static PyObject *py_i2py(char code, void *iobj)
 }
 
 /* PyObject -> irssi obj*/
-static void *py_py2i(char code, PyObject *pobj, int arg)
+static void *py_py2i(char code, PyObject *pobj, int arg, const char *signal)
 {
     char *type;
 
@@ -266,7 +311,7 @@ static void *py_py2i(char code, PyObject *pobj, int arg)
 
     switch (code)
     {
-        /* XXX: string doesn't (necssarily) persist */
+        /* XXX: string doesn't persist */
         case 's':
             type = "str";
             if (PyString_Check(pobj)) return PyString_AsString(pobj);
@@ -363,8 +408,8 @@ static void *py_py2i(char code, PyObject *pobj, int arg)
             return NULL;
     }
 
-    PyErr_Format(PyExc_TypeError, "expected type %s for arg %d, but got %s", 
-        type, arg, pobj->ob_type->tp_name);
+    PyErr_Format(PyExc_TypeError, "signal `%s': expected type %s for arg %d, but got %s", 
+        signal, type, arg, pobj->ob_type->tp_name);
     return NULL;
 }
 
@@ -420,7 +465,7 @@ static void py_run_handler(PY_SIGNAL_REC *rec, void **args)
     if (!ret)
         goto error;
   
-    /*XXX: reference arg handling not well tested */
+    /*XXX: IN/OUT arg handling not well tested */
     for (i = 0, j = 0; i < arglen; i++)
     {
         GList **list;
@@ -474,15 +519,12 @@ static void py_sig_proxy(void *p1, void *p2, void *p3, void *p4, void *p5, void 
     py_run_handler(rec, args);
 }
 
-int pysignals_emit(const char *signal, PyObject *argtup)
+static int py_convert_args(void **args, PyObject *argtup, const char *signal)
 {
-    PY_SIGNAL_SPEC_REC *spec;
-    void *args[6];
     char *arglist;
+    PY_SIGNAL_SPEC_REC *spec;
     int i;
     int maxargs;
-
-    memset(args, 0, sizeof args);
 
     spec = py_signal_lookup(signal);
     if (!spec)
@@ -491,17 +533,62 @@ int pysignals_emit(const char *signal, PyObject *argtup)
         return 0;
     }
 
+    /*XXX: specifying fewer signal args than in the format implicitly 
+      sets overlooked args to NULL or 0 */
+
     arglist = spec->arglist;
     maxargs = strlen(arglist);
-
-    for (i = 0; i < maxargs && i+1 < PyTuple_Size(argtup); i++)
+    for (i = 0; i < maxargs && i < PyTuple_Size(argtup); i++)
     {
-        args[i] = py_py2i(arglist[i], PyTuple_GET_ITEM(argtup, i+1), i+1);
+        args[i] = py_py2i(arglist[i], 
+                PyTuple_GET_ITEM(argtup, i), 
+                i+1, signal);
+
         if (PyErr_Occurred()) /* XXX: any cleanup needed? */
-            return 0;
+            return -1;
     }
 
-    signal_emit(signal, maxargs, 
+    return maxargs;
+}
+
+int pysignals_emit(const char *signal, PyObject *argtup)
+{
+    int arglen;
+    void *args[6];
+
+    memset(args, 0, sizeof args);
+
+    arglen = py_convert_args(args, argtup, signal);
+    if (arglen < 0)
+        return 0;
+
+    signal_emit(signal, arglen,
+            args[0], args[1], args[2],   
+            args[3], args[4], args[5]);
+
+    return 1;
+}
+
+int pysignals_continue(PyObject *argtup)
+{
+    const char *signal;
+    int arglen;
+    void *args[6];
+
+    memset(args, 0, sizeof args);
+
+    signal = signal_get_emitted();
+    if (!signal)
+    {
+        PyErr_Format(PyExc_LookupError, "cannot determine current signal");
+        return 0;
+    }
+   
+    arglen = py_convert_args(args, argtup, signal);
+    if (arglen < 0)
+        return 0;
+
+    signal_continue(arglen,
             args[0], args[1], args[2],   
             args[3], args[4], args[5]);
 

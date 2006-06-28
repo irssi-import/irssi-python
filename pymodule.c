@@ -851,17 +851,51 @@ PyDoc_STRVAR(py_signal_emit_doc,
 static PyObject *py_signal_emit(PyObject *self, PyObject *args)
 {
     PyObject *pysig;
+    PyObject *sigargs;
+    char *name;
+    int ret;
 
-    if (PyTuple_Size(args) < 1 || PyTuple_Size(args) > SIGNAL_MAX_ARGUMENTS)
-        return PyErr_Format(PyExc_TypeError, "need at least one argument for signal");
+    if (PyTuple_Size(args) < 1)
+        return PyErr_Format(PyExc_TypeError, "signal name required");
+
+    if (PyTuple_Size(args) > SIGNAL_MAX_ARGUMENTS+1)
+        return PyErr_Format(PyExc_TypeError, 
+                "no more than %d arguments for signal accepted", SIGNAL_MAX_ARGUMENTS);
 
     pysig = PyTuple_GET_ITEM(args, 0);
     if (!PyString_Check(pysig))
         return PyErr_Format(PyExc_TypeError, "signal must be string");
+  
+    name = PyString_AsString(pysig);
+    if (!name)
+        return NULL;
     
-    if (!pysignals_emit(PyString_AS_STRING(pysig), args))
+    sigargs = PySequence_GetSlice(args, 1, PyTuple_Size(args));
+    if (!sigargs)
         return NULL;
 
+    ret = pysignals_emit(name, sigargs);
+    Py_DECREF(sigargs);
+    if (!ret)
+        return NULL;
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_signal_continue_doc,
+    "signal_continue(*args) -> None\n"
+    "\n"
+    "Continue (reemit?) the current Irssi signal with up to 6 arguments\n"
+);
+static PyObject *py_signal_continue(PyObject *self, PyObject *args)
+{
+    if (PyTuple_Size(args) > SIGNAL_MAX_ARGUMENTS)
+        return PyErr_Format(PyExc_TypeError, 
+                "no more than %d arguments for signal accepted", SIGNAL_MAX_ARGUMENTS);
+
+    if (!pysignals_continue(args))
+        return NULL;
+    
     Py_RETURN_NONE;
 }
 
@@ -895,9 +929,31 @@ static PyObject *py_signal_stop_by_name(PyObject *self, PyObject *args, PyObject
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(py_signal_get_emitted_doc,
+    "signal_get_emmited() -> signal name string\n"
+    "\n"
+    "Get name of current signal\n"
+);
+static PyObject *py_signal_get_emitted(PyObject *self, PyObject *args)
+{
+    RET_AS_STRING_OR_NONE(signal_get_emitted());
+}
+
+PyDoc_STRVAR(py_signal_get_emitted_id_doc,
+    "signal_get_emmited_id() -> signal id int\n"
+    "\n"
+    "Get id of current signal\n"
+);
+static PyObject *py_signal_get_emitted_id(PyObject *self, PyObject *args)
+{
+    return PyInt_FromLong(signal_get_emitted_id());
+}
+
 static PyMethodDef ModuleMethods[] = {
-    {"prnt", (PyCFunction)py_prnt, METH_VARARGS|METH_KEYWORDS, py_prnt_doc},
-    {"get_script", (PyCFunction)py_get_script, METH_NOARGS, py_get_script_doc},
+    {"prnt", (PyCFunction)py_prnt, METH_VARARGS | METH_KEYWORDS, 
+        py_prnt_doc},
+    {"get_script", (PyCFunction)py_get_script, METH_NOARGS, 
+        py_get_script_doc},
     {"chatnet_find", (PyCFunction)py_chatnet_find, METH_VARARGS | METH_KEYWORDS,
         py_chatnet_find_doc},
     {"chatnets", (PyCFunction)py_chatnets, METH_NOARGS,
@@ -1004,6 +1060,12 @@ static PyMethodDef ModuleMethods[] = {
         py_signal_stop_doc},
     {"signal_stop_by_name", (PyCFunction)py_signal_stop_by_name, METH_VARARGS | METH_KEYWORDS,
         py_signal_stop_by_name_doc},
+    {"signal_get_emitted", (PyCFunction)py_signal_get_emitted, METH_NOARGS,
+        py_signal_get_emitted_doc},
+    {"signal_get_emitted_id", (PyCFunction)py_signal_get_emitted_id, METH_NOARGS,
+        py_signal_get_emitted_id_doc},
+    {"signal_continue", (PyCFunction)py_signal_continue, METH_VARARGS,
+        py_signal_continue_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
