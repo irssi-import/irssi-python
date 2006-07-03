@@ -1,6 +1,9 @@
 static PY_CONSTANT_REC py_constants[] = {
-    {"INPUT_READ",                INPUT_READ},
-    {"INPUT_WRITE",               INPUT_WRITE},
+    {"IO_IN",                   G_IO_IN},
+    {"IO_OUT",                  G_IO_OUT},
+    {"IO_PRI",                  G_IO_PRI},
+    {"IO_ERR",                  G_IO_ERR},
+    {"IO_HUP",                  G_IO_HUP},
     {"IRSSI_GUI_GNOME",           IRSSI_GUI_GNOME},
     {"IRSSI_GUI_GTK",             IRSSI_GUI_GTK},
     {"IRSSI_GUI_KDE",             IRSSI_GUI_KDE},

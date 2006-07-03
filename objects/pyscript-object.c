@@ -5,6 +5,7 @@
 #include "pysignals.h"
 #include "pymodule.h"
 #include "pysource.h"
+#include "pythemes.h"
 
 /* handle cycles...
    Can't think of any reason why the user would put script into one of the lists
@@ -40,31 +41,29 @@ static void PyScript_dealloc(PyScript* self)
 static PyObject *PyScript_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyScript *self; 
-    PyObject *argv, *modules;
+    PyObject *argv = NULL, *modules = NULL;
 
     argv = PyList_New(0);
     if (!argv)
-        return NULL; 
+        goto error;
 
     modules = PyDict_New();
     if (!modules)
-    {
-        Py_DECREF(argv);
-        return NULL; 
-    }
+        goto error;
 
     self = (PyScript *)type->tp_alloc(type, 0);
     if (!self)
-    {
-        Py_DECREF(argv);
-        Py_DECREF(modules);
-        return NULL;
-    }
-   
+        goto error;
+
     self->argv = argv;
     self->modules = modules;
     
     return (PyObject *)self;
+
+error:
+    Py_XDECREF(argv);
+    Py_XDECREF(modules);
+    return NULL;
 }
 
 PyDoc_STRVAR(PyScript_command_bind_doc,
@@ -268,55 +267,70 @@ static PyObject *PyScript_signal_unregister(PyScript *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(PyScript_timeout_add_doc,
-    "timeout_add(msecs, func, data=None, once=False) -> int source handle\n"
+    "timeout_add(msecs, func, data=None) -> int source tag\n"
+    "\n"
+    "Add a timeout handler called every 'msecs' milliseconds until func\n"
+    "returns False or the source is removed with source_remove().\n"
+    "\n"
+    "func is called as func(data) or func(), depending on whether data\n"
+    "is specified or not.\n"
 );
 static PyObject *PyScript_timeout_add(PyScript *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"msecs", "func", "data", "once", NULL};
+    static char *kwlist[] = {"msecs", "func", "data", NULL};
     int msecs = 0;
     PyObject *func = NULL;
     PyObject *data = NULL;
-    int once = 0;
     int ret;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO|Oi", kwlist, 
-           &msecs, &func, &data, &once))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO|O", kwlist, 
+           &msecs, &func, &data))
         return NULL;
 
     if (msecs < 10)
         return PyErr_Format(PyExc_ValueError, "msecs must be at least 10");
     
-    ret = pysource_timeout_add_list(&self->sources, msecs, func, data, once);
+    if (!PyCallable_Check(func))
+        return PyErr_Format(PyExc_TypeError, "func not callable");
+
+    ret = pysource_timeout_add_list(&self->sources, msecs, func, data);
 
     return PyInt_FromLong(ret);
 }
 
-PyDoc_STRVAR(PyScript_input_add_doc,
-    "input_add(fd, func, data=None, once=False, condition=G_INPUT_READ) -> int source tag\n"
+PyDoc_STRVAR(PyScript_io_add_watch_doc,
+    "io_add_watch(fd, func, data=None, condition=IO_IN|IO_PRI) -> int source tag\n"
 );
-static PyObject *PyScript_input_add(PyScript *self, PyObject *args, PyObject *kwds)
+static PyObject *PyScript_io_add_watch(PyScript *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"fd", "func", "data", "once", "condition", NULL};
+    static char *kwlist[] = {"fd", "func", "data", "condition", NULL};
     int fd = 0;
+    PyObject *pyfd = NULL;
     PyObject *func = NULL;
     PyObject *data = NULL;
-    int once = 0;
-    int condition = G_INPUT_READ;
+    int condition = G_IO_IN | G_IO_PRI;
     int ret;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO|Oii", kwlist, 
-           &fd, &func, &data, &once, &condition))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO|Oi", kwlist, 
+           &pyfd, &func, &data, &condition))
         return NULL;
 
-    ret = pysource_input_add_list(&self->sources, fd, condition, func, data, once);
+    fd = PyObject_AsFileDescriptor(pyfd);
+    if (fd < 0)
+        return NULL;
+   
+    if (!PyCallable_Check(func))
+        return PyErr_Format(PyExc_TypeError, "func not callable");
+    
+    ret = pysource_io_add_watch_list(&self->sources, fd, condition, func, data);
 
     return PyInt_FromLong(ret);
 }
 
 PyDoc_STRVAR(PyScript_source_remove_doc,
-    "source_remove(tag) -> None\n"
+    "source_remove(tag) -> bool\n"
     "\n"
-    "Remove IO or timeout source by tag\n"
+    "Remove IO or timeout source by tag. Return True if tag found and removed.\n"
 );
 static PyObject *PyScript_source_remove(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -327,8 +341,204 @@ static PyObject *PyScript_source_remove(PyScript *self, PyObject *args, PyObject
            &tag))
         return NULL;
 
-    if (!pysource_remove_tag(&self->sources, tag))
-        return PyErr_Format(PyExc_KeyError, "source tag not found");
+    /* the destroy notify func will remove the list link, but first
+       check that the tag exists in this Script object */
+    if (g_slist_find(self->sources, GINT_TO_POINTER(tag)))
+        return PyBool_FromLong(g_source_remove(tag));
+
+    Py_RETURN_FALSE;
+}
+
+static int py_settings_add(PyScript *self, const char *name)
+{
+    GSList *node;
+
+    node = gslist_find_icase_string(self->settings, name);
+    if (node)
+        return 0;
+
+    self->settings = g_slist_append(self->settings, g_strdup(name));
+    
+    return 1;
+}
+
+static int py_settings_remove(PyScript *self, const char *name)
+{
+    GSList *node;
+
+    node = gslist_find_icase_string(self->settings, name);
+    if (!node)
+        return 0;
+  
+    settings_remove(node->data);
+    g_free(node->data);
+
+    self->settings = g_slist_delete_link(self->settings, node);
+
+    return 1;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_str_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_str(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    char *def = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_str_module(MODULE_NAME"/scripts", section, key, def);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_int_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_int(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    int def = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_int_module(MODULE_NAME"/scripts", section, key, def);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_bool_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_bool(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    int def = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_bool_module(MODULE_NAME"/scripts", section, key, def);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_time_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_time(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    char *def = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_time_module(MODULE_NAME"/scripts", section, key, def);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_level_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_level(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    char *def = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_level_module(MODULE_NAME"/scripts", section, key, def);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_add_size_doc,
+    ""
+);
+static PyObject *PyScript_settings_add_size(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"section", "key", "def", NULL};
+    char *section = "";
+    char *key = "";
+    char *def = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &section, &key, &def))
+        return NULL;
+
+    if (!py_settings_add(self, key))
+        return PyErr_Format(PyExc_ValueError, "key, %s, already added by script", key);
+
+    settings_add_size_module(MODULE_NAME"/scripts", section, key, def);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyScript_settings_remove_doc,
+    "settings_remove(key) -> bool\n"
+);
+static PyObject *PyScript_settings_remove(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyBool_FromLong(py_settings_remove(self, key));
+}
+
+PyDoc_STRVAR(PyScript_theme_register_doc,
+    "theme_register(list) -> None\n"
+);
+static PyObject *PyScript_theme_register(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"list", NULL};
+    PyObject *list = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, 
+           &list))
+        return NULL;
+
+    if (!pythemes_register(pyscript_get_name(self), list))
+        return NULL;
     
     Py_RETURN_NONE;
 }
@@ -349,10 +559,26 @@ static PyMethodDef PyScript_methods[] = {
         PyScript_signal_unregister_doc},
     {"timeout_add", (PyCFunction)PyScript_timeout_add, METH_VARARGS | METH_KEYWORDS,
         PyScript_timeout_add_doc},
-    {"input_add", (PyCFunction)PyScript_input_add, METH_VARARGS | METH_KEYWORDS,
-        PyScript_input_add_doc},
+    {"io_add_watch", (PyCFunction)PyScript_io_add_watch, METH_VARARGS | METH_KEYWORDS,
+        PyScript_io_add_watch_doc},
     {"source_remove", (PyCFunction)PyScript_source_remove, METH_VARARGS | METH_KEYWORDS,
         PyScript_source_remove_doc},
+    {"settings_add_str", (PyCFunction)PyScript_settings_add_str, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_str_doc},
+    {"settings_add_int", (PyCFunction)PyScript_settings_add_int, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_int_doc},
+    {"settings_add_bool", (PyCFunction)PyScript_settings_add_bool, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_bool_doc},
+    {"settings_add_time", (PyCFunction)PyScript_settings_add_time, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_time_doc},
+    {"settings_add_level", (PyCFunction)PyScript_settings_add_level, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_level_doc},
+    {"settings_add_size", (PyCFunction)PyScript_settings_add_size, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_add_size_doc},
+    {"settings_remove", (PyCFunction)PyScript_settings_remove, METH_VARARGS | METH_KEYWORDS,
+        PyScript_settings_remove_doc},
+    {"theme_register", (PyCFunction)PyScript_theme_register, METH_VARARGS | METH_KEYWORDS,
+        PyScript_theme_register_doc},
     {NULL}  /* Sentinel */
 };
 
@@ -363,7 +589,7 @@ static PyMemberDef PyScript_members[] = {
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject PyScriptType = {
+PyTypeObject PyScriptType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
     "Script",               /*tp_name*/
@@ -408,7 +634,7 @@ static PyTypeObject PyScriptType = {
 /* PyScript factory function */
 PyObject *pyscript_new(PyObject *module, char **argv)
 {
-    PyObject *script = NULL;
+    PyObject *script;
 
     script = PyObject_CallFunction((PyObject*)&PyScriptType, "()"); 
 
@@ -418,16 +644,19 @@ PyObject *pyscript_new(PyObject *module, char **argv)
 
         while (*argv)
         {
-            PyObject *str = PyString_FromString(*argv);
-            if (!str)
+            if (**argv != '\0')
             {
-                /* The destructor should DECREF argv */
-                Py_DECREF(script);
-                return NULL;
-            }
+                PyObject *str = PyString_FromString(*argv);
+                if (!str)
+                {
+                    /* The destructor should DECREF argv */
+                    Py_DECREF(script);
+                    return NULL;
+                }
 
-            PyList_Append(scr->argv, str);
-            Py_DECREF(str);
+                PyList_Append(scr->argv, str);
+                Py_DECREF(str);
+            }
 
             *argv++;
         }
@@ -466,15 +695,47 @@ void pyscript_remove_signals(PyObject *script)
 
 void pyscript_remove_sources(PyObject *script)
 {
+    GSList *node;
     PyScript *self;
 
     g_return_if_fail(pyscript_check(script));
 
     self = (PyScript *) script;
 
-    pysource_remove_list(self->sources);
-    g_slist_free(self->sources);
-    self->sources = NULL;
+    node = self->sources;
+    while (node)
+    {
+        /* the notify func will destroy the link so save next */
+        GSList *next = node->next;
+        g_source_remove(GPOINTER_TO_INT(node->data));
+        node = next;
+    }
+
+    g_return_if_fail(self->sources == NULL);
+}
+
+void pyscript_remove_settings(PyObject *script)
+{
+    PyScript *self;
+
+    g_return_if_fail(pyscript_check(script));
+
+    self = (PyScript *) script;
+
+    g_slist_foreach(self->settings, (GFunc)settings_remove, NULL);
+    g_slist_foreach(self->settings, (GFunc)g_free, NULL);
+    g_slist_free(self->settings);
+}
+
+void pyscript_remove_themes(PyObject *script)
+{
+    PyScript *self;
+
+    g_return_if_fail(pyscript_check(script));
+
+    self = (PyScript *) script;
+
+    pythemes_unregister(pyscript_get_name(script));
 }
 
 void pyscript_clear_modules(PyObject *script)
@@ -486,6 +747,15 @@ void pyscript_clear_modules(PyObject *script)
     self = (PyScript *) script;
 
     PyDict_Clear(self->modules);
+}
+
+void pyscript_cleanup(PyObject *script)
+{
+    pyscript_remove_signals(script);
+    pyscript_remove_sources(script);
+    pyscript_remove_settings(script);
+    pyscript_remove_themes(script);
+    pyscript_clear_modules(script);
 }
 
 int pyscript_init(void) 

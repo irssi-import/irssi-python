@@ -1,4 +1,5 @@
 #include <Python.h>
+#include <frameobject.h>
 #include <string.h>
 #include "pyirssi.h"
 #include "pyloader.h"
@@ -70,7 +71,7 @@ static char *py_find_script(const char *name)
         fname = (char *)name;
     
     /*XXX: use case insensitive path search? */
-    for (node = script_paths; node != NULL && !path; node = node->next)
+    for (node = script_paths; node && !path; node = node->next)
     {
         path = g_strdup_printf("%s/%s", (char *)node->data, fname);
 
@@ -113,31 +114,32 @@ int pyloader_load_script_argv(char **argv)
     name = file_get_filename(path);
     module = PyModule_New(name);
     g_free(name);
-
     if (!module)
         goto error;
 
     script = pyscript_new(module, argv);
     Py_DECREF(module);
-
     if (!script)
         goto error;
    
     /* insert script obj into module dict, load file */
-    if (PyModule_AddObject(module, "_script", script) < 0)
+    if (PyModule_AddObject(module, "_script", script) != 0)
         goto error;
+
     Py_INCREF(script);
     
     if (!py_load_module(module, path))
         goto error;
     
-    PyList_Append(script_modules, script);
+    if (PyList_Append(script_modules, script) != 0)
+        goto error;
+
+    printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "loaded script %s", argv[0]); 
+    /* PySys_WriteStdout("load %s, script -> 0x%x\n", argv[0], script); */
+
     Py_DECREF(script);
     g_free(path);
 
-    /* PySys_WriteStdout("load %s, script -> 0x%x\n", argv[0], script); */
-
-    printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "loaded script %s", argv[0]); 
     return 1;
 
 error:
@@ -200,9 +202,7 @@ int pyloader_unload_script(const char *name)
 
     PySys_WriteStdout("unload %s, script -> 0x%x\n", name, script);
     
-    pyscript_remove_signals(script);
-    pyscript_remove_sources(script);
-    pyscript_clear_modules(script);
+    pyscript_cleanup(script);
 
     if (PySequence_DelItem(script_modules, id) < 0)
     {
@@ -216,6 +216,39 @@ int pyloader_unload_script(const char *name)
     printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "unloaded script %s", name); 
     
     return 1; 
+}
+
+/* Traverse stack backwards to find the nearest valid _script object in globals */
+PyObject *pyloader_find_script_obj(void)
+{
+    PyFrameObject *frame;
+
+    for (frame = PyEval_GetFrame(); frame != NULL; frame = frame->f_back)
+    {
+        g_return_val_if_fail(frame->f_globals != NULL, NULL);
+        PyObject *script = PyDict_GetItemString(frame->f_globals, "_script");
+        if (script && pyscript_check(script))
+        {
+            /*
+            PySys_WriteStdout("Found script at %s in %s, script -> 0x%x\n",
+                    PyString_AS_STRING(frame->f_code->co_name), 
+                    PyString_AS_STRING(frame->f_code->co_filename), script);
+            */
+            return script;
+        }
+    }
+
+    return NULL;
+}
+
+char *pyloader_find_script_name(void)
+{
+    PyObject *script = pyloader_find_script_obj();
+
+    if (!script)
+        return NULL;
+
+    return pyscript_get_name(script);
 }
 
 GSList *pyloader_list(void)
@@ -296,9 +329,7 @@ static void py_clear_scripts()
     for (i = 0; i < PyList_Size(script_modules); i++)
     {
         PyObject *scr = PyList_GET_ITEM(script_modules, i);
-        pyscript_remove_signals(scr);
-        pyscript_remove_sources(scr);
-        pyscript_clear_modules(scr);
+        pyscript_cleanup(scr);
     }
 
     Py_DECREF(script_modules);

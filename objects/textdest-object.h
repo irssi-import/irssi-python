@@ -12,6 +12,7 @@ typedef struct
     PyIrssiFinal_HEAD(struct _TEXT_DEST_REC)
     PyObject *window;
     PyObject *server;
+    int owned;
 } PyTextDest;
 
 extern PyTypeObject PyTextDestType;

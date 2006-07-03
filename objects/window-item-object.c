@@ -69,6 +69,7 @@ static PyGetSetDef PyWindowItem_getseters[] = {
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(PyWindowItem_prnt_doc,
     "Print to window item"
 );
@@ -105,8 +106,6 @@ static PyObject *PyWindowItem_command(PyWindowItem *self, PyObject *args, PyObje
     
     Py_RETURN_NONE;
 }
-
-/* Methods */
 
 PyDoc_STRVAR(PyWindowItem_window_doc,
     "Return parent window for window item"

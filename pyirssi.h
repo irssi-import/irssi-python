@@ -6,6 +6,7 @@
 #include "common.h"
 #include "modules.h"
 #include "commands.h"
+#include "settings.h"
 #include "printtext.h"
 #include "window-items.h"
 #include "window-activity.h"
@@ -18,9 +19,11 @@
 #include "chatnets.h"
 #include "servers-reconnect.h"
 #include "masks.h"
+#include "misc.h"
 #include "rawlog.h"
 #include "log.h"
 #include "ignore.h"
 #include "fe-exec.h"
+#include "pidwait.h"
 
 #endif

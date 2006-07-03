@@ -27,7 +27,7 @@ typedef struct
     void *data;
 } PyIrssiObject;
 
-#define DATA(obj) (((PyIrssiObject *)obj)->data)
+#define DATA(obj) (obj? ((PyIrssiObject *)obj)->data : NULL)
 
 /* base for classes with a type */
 typedef struct

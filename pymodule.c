@@ -1,25 +1,24 @@
 #include <Python.h>
-#include <frameobject.h>
 #include "pymodule.h"
 #include "pyirssi_irc.h"
 #include "pyscript-object.h"
 #include "factory.h"
 #include "pyutils.h"
 #include "pysignals.h"
+#include "pyloader.h"
+#include "pythemes.h"
 
 /*
  * This module is some what different than the Perl's.
  * Script specific operations are handled by the Script object 
  * instead of by a function in this module.  command_bind, 
- * signal_bind, etc require data to be saved about the script 
+ * signal_add, etc require data to be saved about the script 
  * for cleanup purposes, so I moved those functions to the script 
  * object.
  */
 
 /* Main embedded module */
 PyObject *py_module = NULL;
-
-static PyObject *find_script(void);
 
 /* Module functions */
 /*XXX: prefix PY to avoid ambiguity with py_command function */
@@ -64,7 +63,7 @@ PyDoc_STRVAR(py_get_script_doc,
 );
 static PyObject *py_get_script(PyObject *self, PyObject *args)
 {
-    PyObject *ret = find_script();
+    PyObject *ret = pyloader_find_script_obj();
 
     /* XXX: type check */
     
@@ -949,6 +948,411 @@ static PyObject *py_signal_get_emitted_id(PyObject *self, PyObject *args)
     return PyInt_FromLong(signal_get_emitted_id());
 }
 
+PyDoc_STRVAR(py_settings_get_str_doc,
+    "settings_get_str(key) -> str\n"
+    "\n"
+    "Get value for setting.\n"
+);
+static PyObject *py_settings_get_str(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    RET_AS_STRING_OR_NONE(settings_get_str(key));
+}
+
+PyDoc_STRVAR(py_settings_get_int_doc,
+    "settings_get_int(key) -> int\n"
+    "\n"
+    "Get value for setting."
+);
+static PyObject *py_settings_get_int(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyInt_FromLong(settings_get_int(key));
+}
+
+PyDoc_STRVAR(py_settings_get_bool_doc,
+    "settings_get_bool(key) -> bool\n"
+    "\n"
+    "Get value for setting.\n"
+);
+static PyObject *py_settings_get_bool(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyBool_FromLong(settings_get_bool(key));
+}
+
+PyDoc_STRVAR(py_settings_get_time_doc,
+    "settings_get_time(key) -> long\n"
+    "\n"
+    "Get value for setting.\n"
+);
+static PyObject *py_settings_get_time(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyLong_FromLong(settings_get_time(key));
+}
+
+PyDoc_STRVAR(py_settings_get_level_doc,
+    "settings_get_level(key) -> int\n"
+    "\n"
+    "Get value for setting.\n"
+);
+static PyObject *py_settings_get_level(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyInt_FromLong(settings_get_level(key));
+}
+
+PyDoc_STRVAR(py_settings_get_size_doc,
+    "settings_get_size(key) -> long\n"
+    "\n"
+    "Get value for setting.\n"
+);
+static PyObject *py_settings_get_size(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", NULL};
+    char *key = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &key))
+        return NULL;
+
+    return PyLong_FromLong(settings_get_size(key));
+}
+
+PyDoc_STRVAR(py_settings_set_str_doc,
+    "settings_set_str(key, value) -> None\n"
+    "\n"
+    "Set string value for setting\n"
+);
+static PyObject *py_settings_set_str(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    char *value = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &key, &value))
+        return NULL;
+
+    settings_set_str(key, value);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_settings_set_int_doc,
+    "settings_set_int(key, value) -> None\n"
+    "\n"
+    "Set int value for setting"
+);
+static PyObject *py_settings_set_int(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    int value = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
+           &key, &value))
+        return NULL;
+
+    settings_set_int(key, value);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_settings_set_bool_doc,
+    "settings_set_bool(key, value) -> None\n"
+    "\n"
+    "Set bool value for setting\n"
+);
+static PyObject *py_settings_set_bool(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    int value = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
+           &key, &value))
+        return NULL;
+
+    settings_set_bool(key, value);
+
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_settings_set_time_doc,
+    "settings_set_time(key, value) -> bool\n"
+    "\n"
+    "Set string value for setting\n"
+);
+static PyObject *py_settings_set_time(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    char *value = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &key, &value))
+        return NULL;
+
+    return PyBool_FromLong(settings_set_time(key, value));
+}
+
+PyDoc_STRVAR(py_settings_set_level_doc,
+    "settings_set_level(key, value) -> bool\n"
+    "\n"
+    "Set string value for setting\n"
+);
+static PyObject *py_settings_set_level(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    char *value = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &key, &value))
+        return NULL;
+
+    return PyBool_FromLong(settings_set_level(key, value));
+}
+
+PyDoc_STRVAR(py_settings_set_size_doc,
+    "settings_set_size(key, value) -> bool\n"
+    "\n"
+    "Set string value for setting\n"
+);
+static PyObject *py_settings_set_size(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key", "value", NULL};
+    char *key = "";
+    char *value = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &key, &value))
+        return NULL;
+
+    return PyBool_FromLong(settings_set_size(key, value));
+}
+
+PyDoc_STRVAR(py_pidwait_add_doc,
+    "pidwait_add(pid) -> None\n"
+    "\n"
+    "Add pid to wait list\n"
+);
+static PyObject *py_pidwait_add(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"pid", NULL};
+    int pid = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, 
+           &pid))
+        return NULL;
+
+    pidwait_add(pid);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_pidwait_remove_doc,
+    "pidwait_remove(pid) -> None\n"
+    "\n"
+    "Remove pid from wait list\n"
+);
+static PyObject *py_pidwait_remove(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"pid", NULL};
+    int pid = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, 
+           &pid))
+        return NULL;
+
+    pidwait_remove(pid);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_format_get_length_doc,
+    "format_get_length(str) -> int length\n"
+);
+static PyObject *py_format_get_length(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"str", NULL};
+    char *str = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &str))
+        return NULL;
+
+    return PyInt_FromLong(format_get_length(str));
+}
+
+PyDoc_STRVAR(py_format_real_length_doc,
+    "format_real_length(str, len) -> int length\n"
+);
+static PyObject *py_format_real_length(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"str", "len", NULL};
+    char *str = "";
+    int len;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sl", kwlist, 
+           &str, &len))
+        return NULL;
+
+    return PyInt_FromLong(format_real_length(str, len));
+}
+
+PyDoc_STRVAR(py_strip_codes_doc,
+    "strip_codes(input) -> str\n"
+);
+static PyObject *py_strip_codes(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"input", NULL};
+    char *input = "";
+    char *ret;
+    PyObject *pyret;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &input))
+        return NULL;
+
+    ret = strip_codes(input);
+    if (ret)
+    {
+        pyret = PyString_FromString(ret);
+        g_free(ret);
+        return pyret;
+    }
+
+    Py_RETURN_NONE;
+}
+
+#if 0
+PyDoc_STRVAR(py_format_get_text_doc,
+    "format_get_text(textdest, module, formatnum, ...) -> str\n"
+    "\n"
+    "Return a substituted format string from module and formatnum.\n"
+    "module is a string.\n"
+    "\n"
+    "Example:\n"
+    "TODO\n"
+);
+static PyObject *py_format_get_text(PyObject *self, PyObject *varargs)
+{
+    PyTextDest *textdest = NULL;
+    char *module = "";
+    unsigned int formatnum = 0;
+    PyObject *args = NULL, *pycharargs = NULL;
+    THEME_REC *theme;
+    MODULE_THEME_REC *modtheme;
+    char **charargs = NULL;
+    char *ret;
+    int i;
+
+    args = PySequence_GetSlice(varargs, 0, 3);
+    if (!args)
+        goto error; 
+   
+    pycharargs = PySequence_GetSlice(varargs, 3, PyTuple_Size(varargs));
+    if (!pycharargs)
+        goto error;
+
+    if (!PyArg_ParseTuple(args, "OsI", 
+           &textdest, &module, &formatnum))
+        goto error;
+
+    if (!pytextdest_check((PyObject *)textdest))
+    {
+        PyErr_Format(PyExc_TypeError, "arg 1 must be TextDest");
+        goto error;
+    }
+  
+    /* Bleh, check that formatnum is within range */ 
+    theme = window_get_theme(textdest->data->window);
+
+    /* FIXME: how to boundscheck formatnum ?? */
+    
+    /* size + 1 for terminating NULL ptr */
+    charargs = g_new0(char *, PyTuple_Size(pycharargs) + 1);
+   
+    for (i = 0; i < PyTuple_Size(pycharargs); i++)
+    {
+        PyObject *obj = PyTuple_GET_ITEM(pycharargs, i);
+        char *str; 
+       
+        if (!PyString_Check(obj))
+        {
+            PyErr_Format(PyExc_TypeError, 
+                    "non string in string argument list (arg %d)", 
+                    i + 4);
+            goto error;
+        }
+        
+        str = PyString_AsString(obj);
+        if (!str)
+            goto error;
+
+        charargs[i] = str;
+    }
+  
+    /* return string, or if string is NULL, return None */
+    ret = format_get_text_theme_charargs(theme, module, DATA(textdest), formatnum, charargs);
+    Py_DECREF(args);
+    Py_DECREF(pycharargs);
+    g_free(charargs);
+
+    if (ret)
+    {
+        PyObject *pyret;
+
+        pyret = PyString_FromString(ret);
+        g_free(ret);
+
+        return pyret;
+    }
+
+    Py_RETURN_NONE;
+
+error:
+    Py_XDECREF(args);
+    Py_XDECREF(pycharargs);
+    g_free(charargs);
+
+    return NULL;
+}
+#endif
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS | METH_KEYWORDS, 
         py_prnt_doc},
@@ -1066,32 +1470,44 @@ static PyMethodDef ModuleMethods[] = {
         py_signal_get_emitted_id_doc},
     {"signal_continue", (PyCFunction)py_signal_continue, METH_VARARGS,
         py_signal_continue_doc},
+    {"settings_get_str", (PyCFunction)py_settings_get_str, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_str_doc},
+    {"settings_get_int", (PyCFunction)py_settings_get_int, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_int_doc},
+    {"settings_get_bool", (PyCFunction)py_settings_get_bool, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_bool_doc},
+    {"settings_get_time", (PyCFunction)py_settings_get_time, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_time_doc},
+    {"settings_get_level", (PyCFunction)py_settings_get_level, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_level_doc},
+    {"settings_get_size", (PyCFunction)py_settings_get_size, METH_VARARGS | METH_KEYWORDS,
+        py_settings_get_size_doc},
+    {"settings_set_str", (PyCFunction)py_settings_set_str, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_str_doc},
+    {"settings_set_int", (PyCFunction)py_settings_set_int, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_int_doc},
+    {"settings_set_bool", (PyCFunction)py_settings_set_bool, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_bool_doc},
+    {"settings_set_time", (PyCFunction)py_settings_set_time, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_time_doc},
+    {"settings_set_level", (PyCFunction)py_settings_set_level, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_level_doc},
+    {"settings_set_size", (PyCFunction)py_settings_set_size, METH_VARARGS | METH_KEYWORDS,
+        py_settings_set_size_doc},
+    {"pidwait_add", (PyCFunction)py_pidwait_add, METH_VARARGS | METH_KEYWORDS,
+        py_pidwait_add_doc},
+    {"pidwait_remove", (PyCFunction)py_pidwait_remove, METH_VARARGS | METH_KEYWORDS,
+        py_pidwait_remove_doc},
+    {"format_get_length", (PyCFunction)py_format_get_length, METH_VARARGS | METH_KEYWORDS,
+        py_format_get_length_doc},
+    {"format_real_length", (PyCFunction)py_format_real_length, METH_VARARGS | METH_KEYWORDS,
+        py_format_real_length_doc},
+    {"strip_codes", (PyCFunction)py_strip_codes, METH_VARARGS | METH_KEYWORDS,
+        py_strip_codes_doc},
+    /*{"format_get_text", (PyCFunction)py_format_get_text, METH_VARARGS,
+        py_format_get_text_doc},*/
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
-
-/*XXX: move to pyloader.c??*/
-/* Traverse stack backwards to find the nearest _script object in globals */
-static PyObject *find_script(void)
-{
-    PyFrameObject *frame;
-
-    for (frame = PyEval_GetFrame(); frame != NULL; frame = frame->f_back)
-    {
-        g_return_val_if_fail(frame->f_globals != NULL, NULL);
-        PyObject *script = PyDict_GetItemString(frame->f_globals, "_script");
-        if (script)
-        {
-            /*
-            PySys_WriteStdout("Found script at %s in %s, script -> 0x%x\n",
-                    PyString_AS_STRING(frame->f_code->co_name), 
-                    PyString_AS_STRING(frame->f_code->co_filename), script);
-            */
-            return script;
-        }
-    }
-
-    return NULL;
-}
 
 int pymodule_init(void)
 {

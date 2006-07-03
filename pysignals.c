@@ -6,12 +6,13 @@
 /* NOTE:
  * There are two different records used to store signal related data:
  * PY_SIGNAL_SPEC_REC and PY_SIGNAL_REC. Each SPEC_REC declares a "plain"
- * signal, or a type of "variable" signal. 
+ * signal, or a type of "variable" signal. Each PY_SIGNAL_REC stores data
+ * about a handler for a signal.
  *
- * Plain signals are emitted by Irssi the same way every time, using the 
- * same text. They are never extended or altered in any way. Plain signals 
- * make up the vast majority of Irssi signals. These include (some random 
- * examples): "beep", "printtext", "log new", "ban new", etc. 
+ * Plain signals are emitted using the same text every time. They are never 
+ * extended or altered in any way. Plain signals make up the vast majority 
+ * of Irssi signals. These include (some random examples): "beep", 
+ * "printtext", "log new", "ban new", etc. 
  *
  * Variable signals are emitted by joining a common prefix with text that
  * varies from emit to emit. These are signals that have a "<cmd>" suffix
@@ -21,23 +22,23 @@
  * user types /nick yournick at the prompt.
  *
  * While PY_SIGNAL_SPEC_REC stores data about each individual signal,
- * PY_SIGNAL_REC stores data about each consumer of a signal (or command). 
+ * PY_SIGNAL_REC stores data about each handler of a signal (or command). 
  * A listing of SPEC_REC entries is stored globally in this module for each 
- * signal known to irssi-python. Each Script holds a list PY_SIGNAL_REC entries
- * to remember signals and commands bound by the script. This allows for easy 
- * cleanup when the script is unloaded. The PY_SIGNAL_REC data includes 
- * references to a callable PyObject and a PY_SIGNAL_SPEC_REC entry for the 
- * signal.
+ * signal known to irssi-python. Each Script holds a list of PY_SIGNAL_REC 
+ * entries to remember signals and commands bound by the script.  The 
+ * PY_SIGNAL_REC data includes references to a callable PyObject and a 
+ * PY_SIGNAL_SPEC_REC entry for the argument type list of the signal.
  *
  * Signals must be registered to be accessible to Python scripts.
  * Registering a dynamic signal adds a new SPEC_REC with a refcount of 1.
- * If another script registers the same signal, refcount is incremented.
- * Binding to the signal also increments its reference count. Likewise,
- * unregistering or unbinding a dynamic signal will decrement its refcount.
- * When refcount hits 0, the dynamic signal is removed from the list, and
- * scripts can no longer bind to it. Built-in signals in the sigmap are
- * never removed; it is an error for the refcount of any such signal entry 
- * to drop to 0.
+ * If another script registers the same signal, the original entry's refcount 
+ * is incremented. Binding to the signal also increments its reference count. 
+ * Likewise, unregistering or unbinding a dynamic signal will decrement its 
+ * refcount. When refcount hits 0, the dynamic signal is removed from the list, 
+ * and scripts can no longer bind to or emit the signal untill it is 
+ * re-registered. Built-in signals in the sigmap are not from the heap and are 
+ * never removed; it is an error for the refcount of any such signal entry to 
+ * drop to 0.
  */
 
 typedef struct _PY_SIGNAL_SPEC_REC 
