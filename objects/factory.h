@@ -32,6 +32,7 @@
 #include "notifylist-object.h"
 #include "process-object.h"
 #include "command-object.h"
+#include "theme-object.h"
 
 int factory_init(void);
 void factory_deinit(void);

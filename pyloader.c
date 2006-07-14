@@ -148,7 +148,14 @@ error:
     else
         printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "error loading script %s", argv[0]); 
 
-    Py_XDECREF(script);
+    if (script)
+    {
+        /* make sure to clean up any formats, signals, commands that may have been
+           attached before the exception took place */
+        pyscript_cleanup(script);
+        Py_DECREF(script);
+    }
+
     g_free(path);
     
     return 0;

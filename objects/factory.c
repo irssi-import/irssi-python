@@ -119,6 +119,9 @@ static int init_objects(void)
     if (!command_object_init())
         return 0;
 
+    if (!theme_object_init())
+        return 0;
+
     return 1;
 }
 

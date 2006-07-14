@@ -1353,6 +1353,26 @@ error:
 }
 #endif
 
+PyDoc_STRVAR(py_themes_reload_doc,
+    "themes_reload() -> None\n"
+);
+static PyObject *py_themes_reload(PyObject *self, PyObject *args)
+{
+    themes_reload();
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_current_theme_doc,
+    "current_theme() -> Theme object\n"
+);
+static PyObject *py_current_theme(PyObject *self, PyObject *args)
+{
+    if (current_theme)
+        return pytheme_new(current_theme);
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS | METH_KEYWORDS, 
         py_prnt_doc},
@@ -1506,6 +1526,10 @@ static PyMethodDef ModuleMethods[] = {
         py_strip_codes_doc},
     /*{"format_get_text", (PyCFunction)py_format_get_text, METH_VARARGS,
         py_format_get_text_doc},*/
+    {"themes_reload", (PyCFunction)py_themes_reload, METH_NOARGS,
+        py_themes_reload_doc},
+    {"current_theme", (PyCFunction)py_current_theme, METH_NOARGS,
+        py_current_theme_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

@@ -5,15 +5,23 @@
 #include "pymodule.h"
 #include "pyloader.h"
 
+static void py_get_mod(char *full, int fullsz, const char *script)
+{
+    g_snprintf(full, fullsz, "irssi_python/%s.py", script);
+}
+
 /* Edited from Perl Themes.xs */
-int pythemes_printformat(TEXT_DEST_REC *dest, const char *script, const char *format, PyObject *argtup) 
+int pythemes_printformat(TEXT_DEST_REC *dest, const char *name, const char *format, PyObject *argtup) 
 {
     char *arglist[MAX_FORMAT_PARAMS + 1];
     THEME_REC *theme;
     char *str;
+    char script[256];
     int formatnum;
     int i;
-
+   
+    py_get_mod(script, sizeof script, name);
+    
     formatnum = format_find_tag(script, format);
     if (formatnum < 0) {
          PyErr_Format(PyExc_KeyError, "unregistered format '%s'", format);
@@ -64,11 +72,14 @@ static void py_destroy_format_list(FORMAT_REC *recs)
 /* register a list of formats in this format:
  * [ (name, format), ... ]
  */
-int pythemes_register(const char *script, PyObject *list)
+int pythemes_register(const char *name, PyObject *list)
 {
+    char script[256];
     FORMAT_REC *formatrecs;
     int i;
 
+    py_get_mod(script, sizeof script, name);
+    
     if (!PyList_Check(list))
     {
         PyErr_Format(PyExc_TypeError, "arg must be list");
@@ -89,7 +100,7 @@ int pythemes_register(const char *script, PyObject *list)
     
     formatrecs = g_new0(FORMAT_REC, PyList_Size(list) + 2);
     formatrecs[0].tag = g_strdup(script);
-    formatrecs[0].tag = g_strdup("Python script");
+    formatrecs[0].def = g_strdup("Python script");
 
     for (i = 0; i < PyList_Size(list); i++)
     {
@@ -120,10 +131,13 @@ int pythemes_register(const char *script, PyObject *list)
     return 1;
 }
 
-void pythemes_unregister(const char *script)
+void pythemes_unregister(const char *name)
 {
+    char script[256];
     FORMAT_REC *formats;
 
+    py_get_mod(script, sizeof script, name);
+    
     formats = g_hash_table_lookup(default_formats, script);
     if (!formats)
         return;
@@ -132,27 +146,48 @@ void pythemes_unregister(const char *script)
     theme_unregister_module(script); 
 }
 
+/* XXX: test binding a PyCFunction to different sources. Not sure
+   if this is a good thing or not, but it seems to work */
 PyDoc_STRVAR(py_printformat_doc,
+    "for Server objects:\n"
+    "printformat(target, level, format, ...) -> None\n"
+    "\n"
+    "For all else:\n"
     "printformat(level, format, ...) -> None\n"
 );
 static PyObject *py_printformat(PyObject *self, PyObject *all)
 {
-    int level = 0;
-    char *format = "";
+    int level;
+    char *format;
+    char *target;
     PyObject *args = NULL, *varargs = NULL;
     TEXT_DEST_REC dest;
     char *script;
+    int formatstart;
 
-    args = PySequence_GetSlice(all, 0, 2);
+    if (self && pyserver_check(self))
+        formatstart = 3;
+    else
+        formatstart = 2;
+
+    args = PySequence_GetSlice(all, 0, formatstart);
     if (!args)
         goto error;
 
-    varargs = PySequence_GetSlice(all, 2, PyTuple_Size(all));
+    varargs = PySequence_GetSlice(all, formatstart, PyTuple_Size(all));
     if (!varargs)
         goto error; 
-    
-    if (!PyArg_ParseTuple(args, "is", &level, &format))
-        goto error; 
+   
+    if (self && pyserver_check(self))
+    {
+        if (!PyArg_ParseTuple(args, "sis", &target, &level, &format))
+            goto error; 
+    }
+    else
+    {
+        if (!PyArg_ParseTuple(args, "is", &level, &format))
+            goto error; 
+    }
 
     script = pyloader_find_script_name();
     if (!script)
@@ -161,7 +196,20 @@ static PyObject *py_printformat(PyObject *self, PyObject *all)
         goto error;
     }
 
-    format_create_dest(&dest, NULL, NULL, level, NULL);
+    /* create the text dest depending on whether this function is called from
+       module level or as a method of one of the objects */
+    if (self == NULL) /* module */
+        format_create_dest(&dest, NULL, NULL, level, NULL);
+    else if (pyserver_check(self))
+        format_create_dest(&dest, DATA(self), target, level, NULL);
+    else if (pywindow_check(self))
+        format_create_dest(&dest, NULL, NULL, level, DATA(self));
+    else if (pywindow_item_check(self))
+    {
+        PyWindowItem *pywi = (PyWindowItem *)self;
+        format_create_dest(&dest, pywi->data->server, pywi->data->visible_name, level, NULL);
+    }
+        
     if (!pythemes_printformat(&dest, script, format, varargs))
         goto error;
 
@@ -177,6 +225,7 @@ error:
     return NULL;
 }
 
+/* XXX: these funcs could be moved to pyutils.c */
 static int py_add_module_func(PyMethodDef *mdef)
 {
     PyObject *func;
