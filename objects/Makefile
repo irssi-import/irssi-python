@@ -1,7 +1,7 @@
 CC = gcc
 
 PYTHON = /usr/include/python2.4
-IRSSI = /usr/local/include/irssi
+IRSSI = /home/chrisd/irssi-0.8.10
 CFLAGS = -fpic -ggdb -Wall -I$(PYTHON) -I$(IRSSI) -I$(IRSSI)/src \
 -I$(IRSSI)/src/fe-common/core -I$(IRSSI)/src/core -I$(IRSSI)/src/fe-text \
 -I$(IRSSI)/src/irc -I$(IRSSI)/src/irc/core -I$(IRSSI)/src/irc/dcc \
@@ -16,7 +16,7 @@ rawlog-object.o log-object.o logitem-object.o ignore-object.o \
 dcc-object.o dcc-chat-object.o dcc-get-object.o dcc-send-object.o \
 netsplit-object.o netsplit-server-object.o netsplit-channel-object.o \
 notifylist-object.o process-object.o command-object.o theme-object.o \
-factory.o
+statusbar-item-object.o factory.o
 
 pyobjects.a: $(OBJ)
 	ar r pyobjects.a $(OBJ)

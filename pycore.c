@@ -8,6 +8,7 @@
 #include "pymodule.h"
 #include "pysignals.h"
 #include "pythemes.h"
+#include "pystatusbar.h"
 #include "factory.h"
 
 /*XXX: copy parse into utils */
@@ -119,6 +120,7 @@ void irssi_python_init(void)
     Py_InitializeEx(0);
 
     pysignals_init();
+    pystatusbar_init();
     if (!pyloader_init() || !pymodule_init() || !factory_init() || !pythemes_init()) 
     {
         printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Failed to load Python");
@@ -150,6 +152,7 @@ void irssi_python_deinit(void)
 
     pymodule_deinit();
     pyloader_deinit();
+    pystatusbar_deinit();
     pysignals_deinit();
     Py_Finalize();
 }

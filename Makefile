@@ -1,7 +1,7 @@
 CC = gcc
 
 PYTHON = /usr/include/python2.4
-IRSSI = /usr/local/include/irssi
+IRSSI = /home/chrisd/irssi-0.8.10
 
 CFLAGS = -fpic -ggdb -Wall -I$(PYTHON) -I$(IRSSI) -I$(IRSSI)/src \
 -I$(IRSSI)/src/fe-common/core -I$(IRSSI)/src/core -I$(IRSSI)/src/fe-text \
@@ -12,7 +12,7 @@ CFLAGS = -fpic -ggdb -Wall -I$(PYTHON) -I$(IRSSI) -I$(IRSSI)/src \
 LDFLAGS = -fpic /usr/lib/libpython2.4.so
 
 OBJ = pycore.o pyutils.o pymodule.o pyloader.o pysignals.o pysource.o \
-pythemes.o
+pythemes.o pystatusbar.o
 
 pyirssi: pyobjects.a $(OBJ)
 	$(CC) -shared -o libirssi_python.so $(OBJ) objects/pyobjects.a $(LDFLAGS)

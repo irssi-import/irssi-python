@@ -1,5 +1,6 @@
 #include "pystatusbar.h"
 #include "pyirssi.h"
+#include "factory.h"
 
 typedef struct
 {
@@ -42,10 +43,14 @@ static void py_statusbar_proxy_call(SBAR_ITEM_REC *item, int sizeonly, PY_BAR_IT
 
     g_return_if_fail(PyCallable_Check(sitem->handler));
 
-    pybaritem = Py_None; /* FIXME: add statusbaritem object */
+    pybaritem = pystatusbar_item_new(item);
+    if (!pybaritem)
+    {
+        PyErr_Print();
+        pystatusbar_item_unregister(sitem->name);
+    }
 
     ret = PyObject_CallFunction(sitem->handler, "Oi", pybaritem, sizeonly);
-    
     if (!ret)
     {
         PyErr_Print();
@@ -69,15 +74,16 @@ static void py_statusbar_proxy(SBAR_ITEM_REC *item, int sizeonly)
     }
 }
 
-int pystatusbar_item_register(PyObject *script, const char *sitem, 
+void pystatusbar_item_register(PyObject *script, const char *sitem, 
         const char *value, PyObject *func)
 {
     if (func)
+    {
+        g_return_if_fail(PyCallable_Check(func));
         py_add_bar_handler(sitem, script, func);
-    
-    statusbar_item_register(sitem, value, func? py_statusbar_proxy : NULL);
+    }
 
-    return 1;
+    statusbar_item_register(sitem, value, func? py_statusbar_proxy : NULL);
 }
 
 /* remove selected status bar item handler */
@@ -118,7 +124,7 @@ void pystatusbar_init(void)
 void pystatusbar_deinit(void)
 {
     g_return_if_fail(py_bar_items != NULL);
-    g_return_if_fail(g_hash_table_size(py_bar_items) != 0);
+    g_return_if_fail(g_hash_table_size(py_bar_items) == 0);
 
     g_hash_table_destroy(py_bar_items);
     py_bar_items = NULL;

@@ -22,6 +22,7 @@ void pyscript_remove_signals(PyObject *script);
 void pyscript_remove_sources(PyObject *script);
 void pyscript_remove_settings(PyObject *script);
 void pyscript_remove_themes(PyObject *script);
+void pyscript_remove_statusbars(PyObject *script);
 void pyscript_clear_modules(PyObject *script);
 void pyscript_cleanup(PyObject *script);
 #define pyscript_check(op) PyObject_TypeCheck(op, &PyScriptType)

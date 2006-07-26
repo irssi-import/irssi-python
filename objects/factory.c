@@ -122,6 +122,9 @@ static int init_objects(void)
     if (!theme_object_init())
         return 0;
 
+    if (!statusbar_item_object_init())
+        return 0;
+
     return 1;
 }
 

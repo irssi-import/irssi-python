@@ -7,6 +7,7 @@
 #include "pysignals.h"
 #include "pyloader.h"
 #include "pythemes.h"
+#include "pystatusbar.h"
 
 /*
  * This module is some what different than the Perl's.
@@ -1373,6 +1374,51 @@ static PyObject *py_current_theme(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(py_statusbar_items_redraw_doc,
+    "statusbar_items_redraw(name) -> None\n"
+);
+static PyObject *py_statusbar_items_redraw(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"name", NULL};
+    char *name = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &name))
+        return NULL;
+
+    statusbar_items_redraw(name);
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(py_statusbars_recreate_items_doc,
+    "statusbars_recreate_items() -> None"
+);
+static PyObject *py_statusbars_recreate_items(PyObject *self, PyObject *args)
+{
+    statusbars_recreate_items();
+
+    Py_RETURN_NONE;
+}
+
+/* XXX: we can unregister any statusbar items, not just the ones from this script */
+PyDoc_STRVAR(py_statusbar_item_unregister_doc,
+    "statusbar_item_unregister(name) -> None"
+);
+static PyObject *py_statusbar_item_unregister(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"name", NULL};
+    char *name = "";
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
+           &name))
+        return NULL;
+
+    pystatusbar_item_unregister(name);
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS | METH_KEYWORDS, 
         py_prnt_doc},
@@ -1530,6 +1576,12 @@ static PyMethodDef ModuleMethods[] = {
         py_themes_reload_doc},
     {"current_theme", (PyCFunction)py_current_theme, METH_NOARGS,
         py_current_theme_doc},
+    {"statusbar_items_redraw", (PyCFunction)py_statusbar_items_redraw, METH_VARARGS | METH_KEYWORDS,
+        py_statusbar_items_redraw_doc},
+    {"statusbars_recreate_items", (PyCFunction)py_statusbars_recreate_items, METH_NOARGS,
+        py_statusbars_recreate_items_doc},
+    {"statusbar_item_unregister", (PyCFunction)py_statusbar_item_unregister, METH_VARARGS | METH_KEYWORDS,
+        py_statusbar_item_unregister_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

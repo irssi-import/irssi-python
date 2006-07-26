@@ -8,6 +8,7 @@
 #include "commands.h"
 #include "settings.h"
 #include "printtext.h"
+#include "statusbar.h"
 #include "window-items.h"
 #include "window-activity.h"
 #include "levels.h"

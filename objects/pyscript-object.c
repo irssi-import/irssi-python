@@ -6,6 +6,7 @@
 #include "pymodule.h"
 #include "pysource.h"
 #include "pythemes.h"
+#include "pystatusbar.h"
 
 /* handle cycles...
    Can't think of any reason why the user would put script into one of the lists
@@ -543,6 +544,25 @@ static PyObject *PyScript_theme_register(PyScript *self, PyObject *args, PyObjec
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(PyScript_statusbar_item_register_doc,
+    "statusbar_item_register(name, value=None, func=None) -> None\n"
+);
+static PyObject *PyScript_statusbar_item_register(PyScript *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"name", "value", "func", NULL};
+    char *name = "";
+    char *value = NULL;
+    PyObject *func = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zO", kwlist, 
+           &name, &value, &func))
+        return NULL;
+
+    pystatusbar_item_register((PyObject *)self, name, value, func);
+    
+    Py_RETURN_NONE;
+}
+
 /* Methods for object */
 static PyMethodDef PyScript_methods[] = {
     {"command_bind", (PyCFunction)PyScript_command_bind, METH_VARARGS | METH_KEYWORDS, 
@@ -579,6 +599,8 @@ static PyMethodDef PyScript_methods[] = {
         PyScript_settings_remove_doc},
     {"theme_register", (PyCFunction)PyScript_theme_register, METH_VARARGS | METH_KEYWORDS,
         PyScript_theme_register_doc},
+    {"statusbar_item_register", (PyCFunction)PyScript_statusbar_item_register, METH_VARARGS | METH_KEYWORDS,
+        PyScript_statusbar_item_register_doc},
     {NULL}  /* Sentinel */
 };
 
@@ -738,6 +760,13 @@ void pyscript_remove_themes(PyObject *script)
     pythemes_unregister(pyscript_get_name(script));
 }
 
+void pyscript_remove_statusbars(PyObject *script)
+{
+    g_return_if_fail(pyscript_check(script));
+
+    pystatusbar_cleanup_script(script);
+}
+
 void pyscript_clear_modules(PyObject *script)
 {
     PyScript *self;
@@ -755,6 +784,7 @@ void pyscript_cleanup(PyObject *script)
     pyscript_remove_sources(script);
     pyscript_remove_settings(script);
     pyscript_remove_themes(script);
+    pyscript_remove_statusbars(script);
     pyscript_clear_modules(script);
 }
 
