@@ -38,7 +38,7 @@ static PyObject *PyCommand_new(PyTypeObject *type, PyObject *args, PyObject *kwd
     return (PyObject *)self;
 }
 
-/* Getter */
+/* Getters */
 PyDoc_STRVAR(PyCommand_cmd_doc,
     "Command name"
 );

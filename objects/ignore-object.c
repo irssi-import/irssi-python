@@ -131,8 +131,11 @@ static PyGetSetDef PyIgnore_getseters[] = {
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(PyIgnore_channels_doc,
-    "Ignore only in channels (list of names)"
+    "channels() -> list of str\n"
+    "\n"
+    "Ignore only in channels (list of names)\n"
 );
 static PyObject *PyIgnore_channels(PyIgnore *self, PyObject *args)
 {
@@ -148,26 +151,30 @@ static PyObject *PyIgnore_channels(PyIgnore *self, PyObject *args)
     for (p = self->data->channels; *p; p++)
     {
         int ret;
-        PyObject *str = PyString_FromString(*p);
-      
+        PyObject *str;
+
+        str = PyString_FromString(*p);
         if (!str)
-            goto error;
+        {
+            Py_XDECREF(list);
+            return NULL;
+        }
 
         ret = PyList_Append(list, str);
         Py_DECREF(str);
         if (ret != 0)
-            goto error;
+        {
+            Py_XDECREF(list);
+            return NULL;
+        }
     }
    
     return list;
-
-error:
-    Py_XDECREF(list);
-    return NULL;
 }
 
-/* Methods */
 PyDoc_STRVAR(PyIgnore_add_rec_doc,
+    "add_rec() -> None\n"
+    "\n"
     "Add ignore record"
 );
 static PyObject *PyIgnore_add_rec(PyIgnore *self, PyObject *args)
@@ -180,6 +187,8 @@ static PyObject *PyIgnore_add_rec(PyIgnore *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyIgnore_update_rec_doc,
+    "update_rec() -> None\n"
+    "\n"
     "Update ignore record in configuration"
 );
 static PyObject *PyIgnore_update_rec(PyIgnore *self, PyObject *args)

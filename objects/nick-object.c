@@ -6,22 +6,6 @@
 #include "pycore.h"
 #include "pyutils.h"
 
-/* member IDs */
-enum
-{
-    M_NICK_NICK,
-    M_NICK_HOST,
-    M_NICK_REALNAME,
-    M_NICK_HOPS,
-    M_NICK_GONE,
-    M_NICK_SERVEROP,
-    M_NICK_OP,
-    M_NICK_VOICE,
-    M_NICK_HALFOP,
-    M_NICK_LAST_CHECK,
-    M_NICK_SEND_MASSJOIN,
-};
-
 static void nick_cleanup(CHANNEL_REC *chan, NICK_REC *nick)
 {
     PyNick *pynick = signal_get_user_data();
@@ -42,39 +26,7 @@ static void PyNick_dealloc(PyNick *self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *PyNick_get(PyNick *self, void *closure)
-{
-    int member = GPOINTER_TO_INT(closure);
-
-    RET_NULL_IF_INVALID(self->data);
-
-    switch (member)
-    {
-        case M_NICK_NICK:
-            RET_AS_STRING_OR_NONE(self->data->nick);
-        case M_NICK_HOST:
-            RET_AS_STRING_OR_NONE(self->data->host);
-        case M_NICK_REALNAME:
-            RET_AS_STRING_OR_NONE(self->data->realname);
-        case M_NICK_HOPS:
-            return PyInt_FromLong(self->data->hops);
-        case M_NICK_GONE:
-            return PyBool_FromLong(self->data->gone);
-        case M_NICK_SERVEROP:
-            return PyBool_FromLong(self->data->serverop);
-        case M_NICK_OP:
-            return PyBool_FromLong(self->data->op);
-        case M_NICK_VOICE:
-            return PyBool_FromLong(self->data->voice);
-        case M_NICK_HALFOP:
-            return PyBool_FromLong(self->data->halfop);
-        case M_NICK_LAST_CHECK:
-            return PyLong_FromUnsignedLong(self->data->last_check);
-    }
-
-    INVALID_MEMBER(member);
-}
-
+/* Getters */
 PyDoc_STRVAR(PyNick_send_massjoin_doc,
     "Waiting to be sent in a 'massjoin' signal, True or False"
 );
@@ -84,51 +36,120 @@ static PyObject *PyNick_send_massjoin_get(PyNick *self, void *closure)
     return PyBool_FromLong(self->data->send_massjoin);
 }
 
+PyDoc_STRVAR(PyNick_nick_doc,
+    "Plain nick"
+);
+static PyObject *PyNick_nick_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->nick);
+}
 
+PyDoc_STRVAR(PyNick_host_doc,
+    "Host address"
+);
+static PyObject *PyNick_host_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->host);
+}
+
+PyDoc_STRVAR(PyNick_realname_doc,
+    "Real name"
+);
+static PyObject *PyNick_realname_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->realname);
+}
+
+PyDoc_STRVAR(PyNick_hops_doc,
+    "Hop count to the server the nick is using"
+);
+static PyObject *PyNick_hops_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(self->data->hops);
+}
+
+PyDoc_STRVAR(PyNick_gone_doc,
+    "User status"
+);
+static PyObject *PyNick_gone_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->gone);
+}
+
+PyDoc_STRVAR(PyNick_serverop_doc,
+    "User status"
+);
+static PyObject *PyNick_serverop_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->serverop);
+}
+
+PyDoc_STRVAR(PyNick_op_doc,
+    "User status"
+);
+static PyObject *PyNick_op_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->op);
+}
+
+PyDoc_STRVAR(PyNick_voice_doc,
+    "User status"
+);
+static PyObject *PyNick_voice_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->voice);
+}
+
+PyDoc_STRVAR(PyNick_halfop_doc,
+    "User status"
+);
+static PyObject *PyNick_halfop_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->halfop);
+}
+
+PyDoc_STRVAR(PyNick_last_check_doc,
+    "timestamp when last checked gone/ircop status."
+);
+static PyObject *PyNick_last_check_get(PyNick *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyLong_FromUnsignedLong(self->data->last_check);
+}
 
 /* specialized getters/setters */
 static PyGetSetDef PyNick_getseters[] = {
-    {"nick", (getter)PyNick_get, NULL, 
-        "Plain nick", 
-        GINT_TO_POINTER(M_NICK_NICK)},
-
-    {"host", (getter)PyNick_get, NULL, 
-        "Host address", 
-        GINT_TO_POINTER(M_NICK_HOST)},
-
-    {"realname", (getter)PyNick_get, NULL, 
-        "Real name", 
-        GINT_TO_POINTER(M_NICK_REALNAME)},
-
-    {"hops", (getter)PyNick_get, NULL, 
-        "Hop count to the server the nick is using", 
-        GINT_TO_POINTER(M_NICK_HOPS)},
-
-    {"gone", (getter)PyNick_get, NULL, 
-        "User status", 
-        GINT_TO_POINTER(M_NICK_GONE)},
-
-    {"serverop", (getter)PyNick_get, NULL, 
-        "User status", 
-        GINT_TO_POINTER(M_NICK_SERVEROP)},
-
-    {"op", (getter)PyNick_get, NULL, 
-        "User status", 
-        GINT_TO_POINTER(M_NICK_OP)},
-
-    {"voice", (getter)PyNick_get, NULL, 
-        "Channel status", 
-        GINT_TO_POINTER(M_NICK_VOICE)},
-
-    {"halfop", (getter)PyNick_get, NULL, 
-        "Channel status", 
-        GINT_TO_POINTER(M_NICK_HALFOP)},
-
-    {"last_check", (getter)PyNick_get, NULL, 
-        "timestamp when last checked gone/ircop status.", 
-        GINT_TO_POINTER(M_NICK_LAST_CHECK)},
     {"send_massjoin", (getter)PyNick_send_massjoin_get, NULL,
         PyNick_send_massjoin_doc, NULL},
+    {"nick", (getter)PyNick_nick_get, NULL,
+        PyNick_nick_doc, NULL},
+    {"host", (getter)PyNick_host_get, NULL,
+        PyNick_host_doc, NULL},
+    {"realname", (getter)PyNick_realname_get, NULL,
+        PyNick_realname_doc, NULL},
+    {"hops", (getter)PyNick_hops_get, NULL,
+        PyNick_hops_doc, NULL},
+    {"gone", (getter)PyNick_gone_get, NULL,
+        PyNick_gone_doc, NULL},
+    {"serverop", (getter)PyNick_serverop_get, NULL,
+        PyNick_serverop_doc, NULL},
+    {"op", (getter)PyNick_op_get, NULL,
+        PyNick_op_doc, NULL},
+    {"voice", (getter)PyNick_voice_get, NULL,
+        PyNick_voice_doc, NULL},
+    {"halfop", (getter)PyNick_halfop_get, NULL,
+        PyNick_halfop_doc, NULL},
+    {"last_check", (getter)PyNick_last_check_get, NULL,
+        PyNick_last_check_doc, NULL},
     {NULL}
 };
 

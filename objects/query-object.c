@@ -7,14 +7,6 @@
 #include "server-object.h"
 #include "pycore.h"
 
-/* member IDs */
-enum
-{
-    M_QUERY_ADDRESS,
-    M_QUERY_SERVER_TAG,
-    M_QUERY_UNWANTED,
-};
-
 /* monitor "query destroyed" signal */
 static void query_cleanup(QUERY_REC *query)
 {
@@ -36,46 +28,49 @@ static void PyQuery_dealloc(PyQuery *self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
-
-static PyObject *PyQuery_get(PyQuery *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyQuery_address_doc,
+    "Host address of the queries nick"
+);
+static PyObject *PyQuery_address_get(PyQuery *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
-
     RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->address);
+}
 
-    switch (member)
-    {
-        case M_QUERY_ADDRESS:
-            RET_AS_STRING_OR_NONE(self->data->address);
-        case M_QUERY_SERVER_TAG:
-            RET_AS_STRING_OR_NONE(self->data->server_tag);
-        case M_QUERY_UNWANTED:
-            return PyBool_FromLong(self->data->unwanted);
-    }
+PyDoc_STRVAR(PyQuery_server_tag_doc,
+    "Server tag used for this nick (doesn't get erased if server gets disconnected)"
+);
+static PyObject *PyQuery_server_tag_get(PyQuery *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->server_tag);
+}
 
-    /* This shouldn't be reached... but... */
-    return PyErr_Format(PyExc_RuntimeError, "invalid member id, %d", member);
+PyDoc_STRVAR(PyQuery_unwanted_doc,
+    "1 if the other side closed or some error occured (DCC chats)"
+);
+static PyObject *PyQuery_unwanted_get(PyQuery *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->unwanted);
 }
 
 /* specialized getters/setters */
 static PyGetSetDef PyQuery_getseters[] = {
-    {"address", (getter)PyQuery_get, NULL, 
-        "Host address of the queries nick", 
-        GINT_TO_POINTER(M_QUERY_ADDRESS)},
-
-    {"server_tag", (getter)PyQuery_get, NULL, 
-        "Server tag used for this nick (doesn't get erased if server gets disconnected)", 
-        GINT_TO_POINTER(M_QUERY_SERVER_TAG)},
-
-    {"unwanted", (getter)PyQuery_get, NULL, 
-        "1 if the other side closed or some error occured (DCC chats)", 
-        GINT_TO_POINTER(M_QUERY_UNWANTED)},
-
+    {"address", (getter)PyQuery_address_get, NULL,
+        PyQuery_address_doc, NULL},
+    {"server_tag", (getter)PyQuery_server_tag_get, NULL,
+        PyQuery_server_tag_doc, NULL},
+    {"unwanted", (getter)PyQuery_unwanted_get, NULL,
+        PyQuery_unwanted_doc, NULL},
     {NULL}
 };
 
 PyDoc_STRVAR(change_server_doc,
-    "Change the active server for the query."
+    "change_server(server) -> None\n"
+    "\n"
+    "Change the active server for the query.\n"
 );
 static PyObject *PyQuery_change_server(PyQuery *self, PyObject *args, PyObject *kwds)
 {

@@ -34,6 +34,7 @@
 #include "command-object.h"
 #include "theme-object.h"
 #include "statusbar-item-object.h"
+#include "main-window-object.h"
 
 int factory_init(void);
 void factory_deinit(void);

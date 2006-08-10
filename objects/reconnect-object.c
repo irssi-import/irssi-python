@@ -25,7 +25,6 @@ static PyObject *PyReconnect_new(PyTypeObject *type, PyObject *args, PyObject *k
 }
 
 /* Getters */
-
 PyDoc_STRVAR(PyReconnect_tag_doc,
     "Unique numeric tag"
 );

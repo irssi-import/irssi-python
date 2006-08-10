@@ -1,7 +1,6 @@
 #include <Python.h>
 #include "pymodule.h"
 #include "pyirssi_irc.h"
-#include "pyscript-object.h"
 #include "factory.h"
 #include "pyutils.h"
 #include "pysignals.h"
@@ -24,7 +23,9 @@ PyObject *py_module = NULL;
 /* Module functions */
 /*XXX: prefix PY to avoid ambiguity with py_command function */
 PyDoc_STRVAR(PY_command_doc,
-    "Execute command"
+    "command(cmd) -> None\n"
+    "\n"
+    "Execute command\n"
 );
 static PyObject *PY_command(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -41,7 +42,9 @@ static PyObject *PY_command(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_prnt_doc,
-    "print output"
+    "prnt(text, msglvl=MSGLEVEL_CLIENTNOTICE) -> None\n"
+    "\n"
+    "print output\n"
 );
 /*XXX: print is a python keyword, so abbreviate it */
 static PyObject *py_prnt(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -60,7 +63,9 @@ static PyObject *py_prnt(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 PyDoc_STRVAR(py_get_script_doc,
-    "Get Irssi script object"
+    "get_script() -> Script object\n"
+    "\n"
+    "Find current Irssi script object\n"
 );
 static PyObject *py_get_script(PyObject *self, PyObject *args)
 {
@@ -77,7 +82,9 @@ static PyObject *py_get_script(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_chatnet_find_doc,
-    "Find chat network with name"
+    "chatnet_find(name) -> Chatnet object or None\n"
+    "\n"
+    "Find chat network with name\n"
 );
 static PyObject *py_chatnet_find(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -92,7 +99,9 @@ static PyObject *py_chatnet_find(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_chatnets_doc,
-    "Return a list of all chatnets"
+    "chatnets() -> list of Chatnet objects\n"
+    "\n"
+    "Return a list of all chatnets\n"
 );
 static PyObject *py_chatnets(PyObject *self, PyObject *args)
 {
@@ -100,7 +109,9 @@ static PyObject *py_chatnets(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_reconnects_doc,
-    "Return a list of all reconnects"
+    "reconnects() -> list of Reconnect objects\n"
+    "\n"
+    "Return a list of all reconnects\n"
 );
 static PyObject *py_reconnects(PyObject *self, PyObject *args)
 {
@@ -108,7 +119,9 @@ static PyObject *py_reconnects(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_servers_doc,
-    "Return a list of all servers"
+    "servers() -> list of Server objects\n"
+    "\n"
+    "Return a list of all servers\n"
 );
 static PyObject *py_servers(PyObject *self, PyObject *args)
 {
@@ -116,7 +129,9 @@ static PyObject *py_servers(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_channels_doc,
-    "Return channel list"
+    "channels() -> list of Channel objects\n"
+    "\n"
+    "Return channel list\n"
 );
 static PyObject *py_channels(PyObject *self, PyObject *args)
 {
@@ -124,7 +139,9 @@ static PyObject *py_channels(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_channel_find_doc,
-    "Find channel from any server"
+    "channel_find(name) -> Channel object or None\n"
+    "\n"
+    "Find channel from any server\n"
 );
 static PyObject *py_channel_find(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -139,7 +156,9 @@ static PyObject *py_channel_find(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_windows_doc,
-    "Get a list of all windows"
+    "windows() -> list of Window objects\n"
+    "\n"
+    "Get a list of all windows\n"
 );
 static PyObject *py_windows(PyObject *self, PyObject *args)
 {
@@ -147,7 +166,9 @@ static PyObject *py_windows(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_active_win_doc,
-    "Return active window"
+    "active_win() -> Window object\n"
+    "\n"
+    "Return active window\n"
 );
 static PyObject *py_active_win(PyObject *self, PyObject *args)
 {
@@ -158,7 +179,9 @@ static PyObject *py_active_win(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_active_server_doc,
-    "Return active server"
+    "active_server() -> Server object or None\n"
+    "\n"
+    "Return active server\n"
 );
 static PyObject *py_active_server(PyObject *self, PyObject *args)
 {
@@ -169,7 +192,9 @@ static PyObject *py_active_server(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_window_find_name_doc,
-    "Find window with name"
+    "window_find_name(name) -> Window object or None\n"
+    "\n"
+    "Find window with name\n"
 );
 static PyObject *py_window_find_name(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -189,7 +214,9 @@ static PyObject *py_window_find_name(PyObject *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(py_window_find_refnum_doc,
-    "Find window with reference number"
+    "window_find_refnum(refnum) -> Window object or None\n"
+    "\n"
+    "Find window with reference number\n"
 );
 static PyObject *py_window_find_refnum(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -209,7 +236,9 @@ static PyObject *py_window_find_refnum(PyObject *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(py_window_refnum_prev_doc,
-    "Return refnum for window that's previous in window list"
+    "window_refnum_prev(refnum, wrap) -> int\n"
+    "\n"
+    "Return refnum for window that's previous in window list\n"
 );
 static PyObject *py_window_refnum_prev(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -225,7 +254,9 @@ static PyObject *py_window_refnum_prev(PyObject *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(py_window_refnum_next_doc,
-    "Return refnum for window that's next in window list"
+    "window_refnum_next(refnum, wrap) -> int\n"
+    "\n"
+    "Return refnum for window that's next in window list\n"
 );
 static PyObject *py_window_refnum_next(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -241,7 +272,9 @@ static PyObject *py_window_refnum_next(PyObject *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(py_windows_refnum_last_doc,
-    "Return refnum for last window."
+    "windows_refnum_last() -> int\n"
+    "\n"
+    "Return refnum for last window.\n"
 );
 static PyObject *py_windows_refnum_last(PyObject *self, PyObject *args)
 {
@@ -249,7 +282,9 @@ static PyObject *py_windows_refnum_last(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_window_find_level_doc,
-    "Find window with level."
+    "window_find_level(level) -> Window object or None\n"
+    "\n"
+    "Find window with level.\n"
 );
 static PyObject *py_window_find_level(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -269,7 +304,9 @@ static PyObject *py_window_find_level(PyObject *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(py_window_find_item_doc,
-    "Find window which contains window item with specified name."
+    "window_find_item(name) -> Window object or None\n"
+    "\n"
+    "Find window which contains window item with specified name.\n"
 );
 static PyObject *py_window_find_item(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -289,8 +326,10 @@ static PyObject *py_window_find_item(PyObject *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(py_window_find_closest_doc,
-    "Find window that matches best to given arguments. `name' can be either"
-    "window name or name of one of the window items."
+    "window_find_closest(name, level) -> Window object or None\n"
+    "\n"
+    "Find window that matches best to given arguments. `name' can be either\n"
+    "window name or name of one of the window items.\n"
 );
 static PyObject *py_window_find_closest(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -311,7 +350,9 @@ static PyObject *py_window_find_closest(PyObject *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(py_window_item_find_doc,
-    "Find window item that matches best to given arguments."
+    "window_item_find(name) -> WindowItem object or None\n"
+    "\n"
+    "Find window item that matches best to given arguments.\n"
 );
 static PyObject *py_window_item_find(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -367,7 +408,9 @@ static PyObject *py_window_create(PyObject *self, PyObject *args, PyObject *kwds
 }
 
 PyDoc_STRVAR(py_server_find_tag_doc,
-    "Find server with tag"
+    "server_find_tag(tag) -> Server object or None\n"
+    "\n"
+    "Find server with tag\n"
 );
 static PyObject *py_server_find_tag(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -382,7 +425,9 @@ static PyObject *py_server_find_tag(PyObject *self, PyObject *args, PyObject *kw
 }
 
 PyDoc_STRVAR(py_server_find_chatnet_doc,
-    "Find first server that is in chatnet"
+    "server_find_chatnet(chatnet) -> Server object or None\n"
+    "\n"
+    "Find first server that is in chatnet\n"
 );
 static PyObject *py_server_find_chatnet(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -397,7 +442,9 @@ static PyObject *py_server_find_chatnet(PyObject *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(py_queries_doc,
-    "Return a list of open queries."
+    "queries() -> list of Query objects\n"
+    "\n"
+    "Return a list of open queries.\n"
 );
 static PyObject *py_queries(PyObject *self, PyObject *args)
 {
@@ -405,7 +452,9 @@ static PyObject *py_queries(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_query_find_doc,
-    "Find a query from any server."
+    "query_find(nick) -> Query object or None\n"
+    "\n"
+    "Find a query from any server.\n"
 );
 static PyObject *py_query_find(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -420,7 +469,9 @@ static PyObject *py_query_find(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_mask_match_doc,
-    "Return true if mask matches nick!user@host"
+    "mask_match(mask, nick, user, host) -> bool\n"
+    "\n"
+    "Return true if mask matches nick!user@host\n"
 );
 static PyObject *py_mask_match(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -438,7 +489,9 @@ static PyObject *py_mask_match(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_mask_match_address_doc,
-    "Return True if mask matches nick!address"
+    "mask_match_address(mask, nick, address) -> bool\n"
+    "\n"
+    "Return True if mask matches nick!address\n"
 );
 static PyObject *py_mask_match_address(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -455,6 +508,8 @@ static PyObject *py_mask_match_address(PyObject *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(py_masks_match_doc,
+    "masks_match(masks, nick, address) -> bool\n"
+    "\n"
     "Return True if any mask in the masks (string separated by spaces)\n"
     "matches nick!address\n"
 );
@@ -473,7 +528,9 @@ static PyObject *py_masks_match(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_rawlog_set_size_doc,
-    "Set the default rawlog size for new rawlogs."
+    "rawlog_set_size(lines) -> None\n"
+    "\n"
+    "Set the default rawlog size for new rawlogs.\n"
 );
 static PyObject *py_rawlog_set_size(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -490,7 +547,9 @@ static PyObject *py_rawlog_set_size(PyObject *self, PyObject *args, PyObject *kw
 }
 
 PyDoc_STRVAR(py_logs_doc,
-    "Return list of logs."
+    "logs() -> list of Log objects\n"
+    "\n"
+    "Return list of logs.\n"
 );
 static PyObject *py_logs(PyObject *self, PyObject *args)
 {
@@ -498,7 +557,9 @@ static PyObject *py_logs(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_log_find_doc,
-    "Find log by file name."
+    "log_find(fname) -> Log object or None\n"
+    "\n"
+    "Find log by file name.\n"
 );
 static PyObject *py_log_find(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -518,7 +579,9 @@ static PyObject *py_log_find(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_ignores_doc,
-    "Return a list of ignore entries"
+    "ignores() -> list of Ignore objects\n"
+    "\n"
+    "Return a list of ignore entries\n"
 );
 static PyObject *py_ignores(PyObject *self, PyObject *args)
 {
@@ -526,7 +589,9 @@ static PyObject *py_ignores(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_ignore_check_doc,
-    "Return True if ignore matches"
+    "ignore_check(nick, host, channel, text, level) -> bool\n"
+    "\n"
+    "Return True if ignore matches\n"
 );
 static PyObject *py_ignore_check(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -545,7 +610,9 @@ static PyObject *py_ignore_check(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_dccs_doc,
-    "Return list of active DCCs"
+    "dccs() -> list of Dcc objects\n"
+    "\n"
+    "Return list of active DCCs\n"
 );
 static PyObject *py_dccs(PyObject *self, PyObject *args)
 {
@@ -553,7 +620,9 @@ static PyObject *py_dccs(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_dcc_register_type_doc,
-    "???"
+    "dcc_register_type(type) -> None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_register_type(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -570,7 +639,9 @@ static PyObject *py_dcc_register_type(PyObject *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(py_dcc_unregister_type_doc,
-    "???"
+    "dcc_unregister_type(type) -> None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_unregister_type(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -587,7 +658,9 @@ static PyObject *py_dcc_unregister_type(PyObject *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(py_dcc_find_request_latest_doc,
-    "???"
+    "dcc_find_request_latest(type) -> Dcc object or None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_find_request_latest(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -602,7 +675,9 @@ static PyObject *py_dcc_find_request_latest(PyObject *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(py_dcc_find_request_doc,
-    "???"
+    "dcc_find_request(type, nick, arg) -> Dcc object or None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_find_request(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -619,7 +694,9 @@ static PyObject *py_dcc_find_request(PyObject *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(py_dcc_chat_find_id_doc,
-    "???"
+    "dcc_chat_find_id(id) -> Dcc object or None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_chat_find_id(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -634,7 +711,9 @@ static PyObject *py_dcc_chat_find_id(PyObject *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(py_dcc_str2type_doc,
-    "???"
+    "dcc_str2type(type) -> int\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_str2type(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -649,7 +728,9 @@ static PyObject *py_dcc_str2type(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_dcc_type2str_doc,
-    "???"
+    "dcc_type2str(type) -> str or None\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_type2str(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -664,7 +745,9 @@ static PyObject *py_dcc_type2str(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_dcc_get_download_path_doc,
-    "???"
+    "dcc_get_download(fname) -> str\n"
+    "\n"
+    "???\n"
 );
 static PyObject *py_dcc_get_download_path(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -688,7 +771,9 @@ static PyObject *py_dcc_get_download_path(PyObject *self, PyObject *args, PyObje
 }
 
 PyDoc_STRVAR(py_notifies_doc,
-    "Return list of notifies"
+    "notifies() -> list of Notifylist objects\n"
+    "\n"
+    "Return list of notifies\n"
 );
 static PyObject *py_notifies(PyObject *self, PyObject *args)
 {
@@ -721,7 +806,9 @@ static PyObject *py_notifylist_add(PyObject *self, PyObject *args, PyObject *kwd
 }
 
 PyDoc_STRVAR(py_notifylist_remove_doc,
-    "Remove notify item from notify list"
+    "notifylist_remove(mask) -> None\n"
+    "\n"
+    "Remove notify item from notify list\n"
 );
 static PyObject *py_notifylist_remove(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -780,7 +867,9 @@ static PyObject *py_notifylist_find(PyObject *self, PyObject *args, PyObject *kw
 }
 
 PyDoc_STRVAR(py_commands_doc,
-    "Return a list of all commands."
+    "commands() -> list of Command objects\n"
+    "\n"
+    "Return a list of all commands.\n"
 );
 static PyObject *py_commands(PyObject *self, PyObject *args)
 {
@@ -788,7 +877,9 @@ static PyObject *py_commands(PyObject *self, PyObject *args)
 }
 
 PyDoc_STRVAR(py_level2bits_doc,
-    "Level string -> number"
+    "level2bits(level) -> long\n"
+    "\n"
+    "Level string -> number\n"
 );
 static PyObject *py_level2bits(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -803,7 +894,9 @@ static PyObject *py_level2bits(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_bits2level_doc,
-    "Level number -> string"
+    "bits2level(bits) -> str\n"
+    "\n"
+    "Level number -> string\n"
 );
 static PyObject *py_bits2level(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -828,7 +921,9 @@ static PyObject *py_bits2level(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(py_combine_level_doc,
-    "Combine level number to level string ('+level -level'). Return new level number."
+    "combine_level(level, str) -> long\n"
+    "\n"
+    "Combine level number to level string ('+level -level'). Return new level number.\n"
 );
 static PyObject *py_combine_level(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -1419,6 +1514,203 @@ static PyObject *py_statusbar_item_unregister(PyObject *self, PyObject *args, Py
     Py_RETURN_NONE;
 }
 
+PyDoc_STRVAR(py_active_mainwin_doc,
+    "active_mainwin() -> MainWindow object\n"
+    "\n"
+    "return active main window\n"
+);
+static PyObject *py_active_mainwin(PyObject *self, PyObject *args)
+{
+    if (!active_mainwin)
+        Py_RETURN_NONE;
+
+    return pymain_window_new(active_mainwin);
+}
+
+PyDoc_STRVAR(py_mainwindows_doc,
+    "mainwindows() -> list of MainWindow objects\n"
+    "\n"
+    "return a list of mainwindows\n"
+);
+static PyObject *py_mainwindows(PyObject *self, PyObject *args)
+{
+    return py_irssi_objlist_new(mainwindows, 1, (InitFunc)pymain_window_new);
+}
+
+/* expect a list of tuples [('str', 0), ...] */
+static GSList *py_register_conv(PyObject *list)
+{
+    int i;
+    GSList *ret = NULL;
+
+    if (list == Py_None)
+        return NULL;
+    
+    if (!PyList_Check(list))
+    {
+        PyErr_Format(PyExc_TypeError, "expect a list of tuples of string and int"); 
+        return NULL;
+    }
+    
+    for (i = 0; i < PyList_Size(list); i++)
+    {
+        char *key;
+        int val;
+        PyObject *tup = PyList_GET_ITEM(list, i);
+
+        if (!PyTuple_Check(tup) || !PyArg_ParseTuple(tup, "si", &key, &val))
+        {
+            if (!PyErr_Occurred() || PyErr_ExceptionMatches(PyExc_TypeError))
+            {
+                PyErr_Clear();
+                PyErr_SetString(PyExc_TypeError, "expect a list of tuples of string and int");
+            }
+
+            /* return the list so far; caller will clear it on error */
+            break;
+        }
+
+        ret = g_slist_append(ret, g_strdup(key));
+        ret = g_slist_append(ret, GINT_TO_POINTER(val));
+    }
+
+    return ret;
+}
+
+PyDoc_STRVAR(py_server_redirect_register_doc,
+    "server_redirect_register(command, stop, start=None, opt=None, remote=False, timeout=0) -> None\n"
+    "\n"
+    "Register new redirection command. By default irssi has already\n"
+    "registered at least: whois, whowas, who, list, ison, userhost, ping,\n"
+    "\"mode channel\" (/MODE #channel), \"mode b\" (/MODE #channel b), \"mode e\"\n"
+    "and \"mode I\".\n"
+    "\n"
+    "`command' specifies the name of the command to register, it doesn't\n"
+    "have to be a real command name, but something you just specify to\n"
+    "Server.redirect_event() when using this redirection.\n"
+    "\n"
+    "`start', `stop', `opt' - lists of ('event', argpos) tuples.\n"
+    "List of events that start and stop this redirection.\n"
+    "Start event list may be empty, but there must be at least one\n"
+    "stop event. Optional events are checked only if they are received\n"
+    "immediately after one of the stop-events. `argpos' specifies the\n"
+    "word number in event string which is compared to wanted argument,\n"
+    "-1 = don't compare, TRUE always.\n"
+    "\n"
+    "`remote' specifies if the command is by default a remote command\n"
+    "(eg. sent to another server). Server.redirect_event() may override this.\n"
+    "\n"
+    "`timeout' - If remote is TRUE, specifies how many seconds to wait for\n"
+    "reply before aborting.\n"
+    "\n"
+    "Example (already done by irssi):\n"
+    "\n"
+    "server_redirect_register('mode channel',\n"
+    "    start = None,\n"
+    "    stop = [ \n"
+    "      ('event 324', 1), # MODE-reply\n"
+    "      ('event 403', 1), # no such channel\n"
+    "      ('event 442', 1), # \"you're not on that channel\"\n"
+    "      ('event 479', 1)  # \"Cannot join channel (illegal name)\"\n"
+    "    ], \n"
+    "    opt = [ \n"
+    "      ('event 329', 1)  # Channel create time\n"
+    "    ] \n"
+    ")\n"
+);
+static PyObject *py_server_redirect_register(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"command", "stop", "start", "opt", "remote", "timeout", NULL};
+    char *command = "";
+    int remote = 0;
+    int timeout = 0;
+    PyObject *start = NULL;
+    PyObject *stop = NULL;
+    PyObject *opt = NULL;
+    GSList *node;
+    GSList *gstart = NULL;
+    GSList *gstop = NULL;
+    GSList *gopt = NULL;
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|OOii", kwlist, 
+           &command, &stop, &start, &opt, &remote, &timeout))
+        return NULL;
+
+    gstart = py_register_conv(start); 
+    if (PyErr_Occurred())
+        goto error;
+
+    gstop = py_register_conv(stop); 
+    if (!gstop || PyErr_Occurred())
+    {
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_TypeError, "stop list must be provided");
+
+        goto error;
+    }
+
+    gopt = py_register_conv(opt); 
+    if (PyErr_Occurred())
+        goto error;
+
+    server_redirect_register_list(command, remote, timeout, gstart, gstop, gopt);
+
+    Py_RETURN_NONE;
+
+error:
+    /* clean up all lists */
+    for (node = gstart; node; node = node->next->next)
+        g_free(node->data);
+    for (node = gstop; node; node = node->next->next)
+        g_free(node->data);
+    for (node = gopt; node; node = node->next->next)
+        g_free(node->data);
+
+    return NULL;
+
+}
+
+PyDoc_STRVAR(py_command_runsub_doc,
+    "command_runsub(cmd, data, server=None, item=None) -> None\n"
+    "\n"
+    "Run subcommands for `cmd'. First word in `data' is parsed as\n"
+    "subcommand. `server' is Server object for current\n"
+    "WindowItem `item'.\n"
+    "\n" 
+    "Call command_runsub in handler function for `cmd' and bind\n"
+    "with command_bind(\"`cmd' `subcmd'\", subcmdfunc[, category]);\n"
+);
+static PyObject *py_command_runsub(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"cmd", "data", "server", "item", NULL};
+    char *cmd = "";
+    char *data = "";
+    PyObject *pserver = Py_None;
+    PyObject *pitem = Py_None;
+    SERVER_REC *server = NULL;
+    WI_ITEM_REC *item = NULL; 
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss|OO", kwlist, 
+           &cmd, &data, &pserver, &pitem))
+        return NULL;
+
+    if (pserver != Py_None && !pyserver_check(pserver))
+        return PyErr_Format(PyExc_TypeError, "server must be a server");
+
+    if (pitem != Py_None && !pywindow_item_check(pitem))
+        return PyErr_Format(PyExc_TypeError, "item must be a window item");
+
+    if (pserver != Py_None)
+        server = DATA(pserver);
+
+    if (pitem != Py_None)
+        item = DATA(pitem);
+   
+    command_runsub(cmd, data, server, item);
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ModuleMethods[] = {
     {"prnt", (PyCFunction)py_prnt, METH_VARARGS | METH_KEYWORDS, 
         py_prnt_doc},
@@ -1582,6 +1874,14 @@ static PyMethodDef ModuleMethods[] = {
         py_statusbars_recreate_items_doc},
     {"statusbar_item_unregister", (PyCFunction)py_statusbar_item_unregister, METH_VARARGS | METH_KEYWORDS,
         py_statusbar_item_unregister_doc},
+    {"active_mainwin", (PyCFunction)py_active_mainwin, METH_NOARGS,
+        py_active_mainwin_doc},
+    {"mainwindows", (PyCFunction)py_mainwindows, METH_NOARGS,
+        py_mainwindows_doc},
+    {"server_redirect_register", (PyCFunction)py_server_redirect_register, METH_VARARGS | METH_KEYWORDS,
+        py_server_redirect_register_doc},
+    {"command_runsub", (PyCFunction)py_command_runsub, METH_VARARGS | METH_KEYWORDS,
+        py_command_runsub_doc},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

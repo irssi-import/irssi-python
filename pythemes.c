@@ -110,9 +110,9 @@ int pythemes_register(const char *name, PyObject *list)
 
         rec = &formatrecs[i + 1];
         item = PyList_GET_ITEM(list, i);
-        if (!PyArg_ParseTuple(item, "ss", &key, &value))
+        if (!PyTuple_Check(item) || !PyArg_ParseTuple(item, "ss", &key, &value))
         {
-            if (PyErr_ExceptionMatches(PyExc_TypeError))
+            if (!PyErr_Occurred() || PyErr_ExceptionMatches(PyExc_TypeError))
             {
                 PyErr_Clear();
                 PyErr_Format(PyExc_TypeError, "format list must contain tuples of two strings");

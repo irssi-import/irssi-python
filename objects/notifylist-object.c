@@ -79,7 +79,9 @@ static PyGetSetDef PyNotifylist_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyNotifylist_ircnets_doc,
-    "Return list of ircnets the notify is checked"
+    "ircnets() -> list of str\n"
+    "\n"
+    "Return list of ircnets the notify is checked\n"
 );
 static PyObject *PyNotifylist_ircnets(PyNotifylist *self, PyObject *args)
 {
@@ -119,7 +121,9 @@ static PyObject *PyNotifylist_ircnets(PyNotifylist *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyNotifylist_ircnets_match_doc,
-    "Return True if notify is checked in ircnet"
+    "ircnets_match(ircnet) -> bool\n"
+    "\n"
+    "Return True if notify is checked in ircnet\n"
 );
 static PyObject *PyNotifylist_ircnets_match(PyNotifylist *self, PyObject *args, PyObject *kwds)
 {

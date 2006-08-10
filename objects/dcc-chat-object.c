@@ -48,7 +48,9 @@ static PyGetSetDef PyDccChat_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyDccChat_chat_send_doc,
-    "Send data to a dcc chat session."
+    "chat_send(data) -> None\n"
+    "\n"
+    "Send data to a dcc chat session.\n"
 );
 static PyObject *PyDccChat_chat_send(PyDccChat *self, PyObject *args, PyObject *kwds)
 {

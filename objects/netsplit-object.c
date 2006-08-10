@@ -91,7 +91,9 @@ static PyGetSetDef PyNetsplit_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyNetsplit_channels_doc,
-    "Return list of NetsplitChannel objects"
+    "channels() -> list of NetsplitChannel objects\n"
+    "\n"
+    "Return list of NetsplitChannel objects\n"
 );
 static PyObject *PyNetsplit_channels(PyNetsplit *self, PyObject *args)
 {

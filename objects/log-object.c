@@ -200,7 +200,9 @@ static PyGetSetDef PyLog_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyLog_items_doc,
-    "Return a list of log items"
+    "items() -> list of Log objects\n"
+    "\n"
+    "Return a list of log items\n"
 );
 static PyObject *PyLog_items(PyLog *self, PyObject *args)
 {
@@ -209,7 +211,9 @@ static PyObject *PyLog_items(PyLog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyLog_update_doc,
-    "Add log to list of logs / save changes to config file."
+    "update() -> None\n"
+    "\n"
+    "Add log to list of logs / save changes to config file.\n"
 );
 static PyObject *PyLog_update(PyLog *self, PyObject *args)
 {
@@ -221,7 +225,9 @@ static PyObject *PyLog_update(PyLog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyLog_close_doc,
-    "Destroy the log file"
+    "destroy() -> None\n"
+    "\n"
+    "Destroy the log file\n"
 );
 static PyObject *PyLog_close(PyLog *self, PyObject *args)
 {
@@ -233,7 +239,9 @@ static PyObject *PyLog_close(PyLog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyLog_start_logging_doc,
-    "Open log file and start logging."
+    "start_logging() -> None\n"
+    "\n"
+    "Open log file and start logging.\n"
 );
 static PyObject *PyLog_start_logging(PyLog *self, PyObject *args)
 {
@@ -245,7 +253,9 @@ static PyObject *PyLog_start_logging(PyLog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyLog_stop_logging_doc,
-    "Stop and close the log file."
+    "stop_logging() -> None\n"
+    "\n"
+    "Stop and close the log file.\n"
 );
 static PyObject *PyLog_stop_logging(PyLog *self, PyObject *args)
 {
@@ -314,7 +324,9 @@ static PyObject *PyLog_item_add(PyLog *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyLog_item_destroy_doc,
-    "Remove log item from log."
+    "item_destroy(item) -> None\n"
+    "\n"
+    "Remove log item from log.\n"
 );
 static PyObject *PyLog_item_destroy(PyLog *self, PyObject *args, PyObject *kwds)
 {

@@ -71,7 +71,9 @@ static PyGetSetDef PyWindowItem_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyWindowItem_prnt_doc,
-    "Print to window item"
+    "prnt(str, level) -> None\n"
+    "\n"
+    "Print to window item\n"
 );
 static PyObject *PyWindowItem_prnt(PyWindowItem *self, PyObject *args, PyObject *kwds)
 {
@@ -90,7 +92,9 @@ static PyObject *PyWindowItem_prnt(PyWindowItem *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(PyWindowItem_command_doc,
-    "Send command to window item"
+    "command(cmd) -> None\n"
+    "\n"
+    "Send command to window item\n"
 );
 static PyObject *PyWindowItem_command(PyWindowItem *self, PyObject *args, PyObject *kwds)
 {
@@ -108,7 +112,9 @@ static PyObject *PyWindowItem_command(PyWindowItem *self, PyObject *args, PyObje
 }
 
 PyDoc_STRVAR(PyWindowItem_window_doc,
-    "Return parent window for window item"
+    "window() -> Window object or None\n"
+    "\n"
+    "Return parent window for window item\n"
 );
 static PyObject *PyWindowItem_window(PyWindowItem *self, PyObject *args)
 {
@@ -124,7 +130,9 @@ static PyObject *PyWindowItem_window(PyWindowItem *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindowItem_change_server_doc,
-    "Change server for window item"
+    "change_server(server) -> None\n"
+    "\n"
+    "Change server for window item\n"
 );
 static PyObject *PyWindowItem_change_server(PyWindowItem *self, PyObject *args, PyObject *kwds)
 {
@@ -146,7 +154,9 @@ static PyObject *PyWindowItem_change_server(PyWindowItem *self, PyObject *args, 
 }
 
 PyDoc_STRVAR(PyWindowItem_is_active_doc,
-    "Returns true if window item is active"
+    "is_active() -> bool\n"
+    "\n"
+    "Returns true if window item is active\n"
 );
 static PyObject *PyWindowItem_is_active(PyWindowItem *self, PyObject *args)
 {
@@ -156,7 +166,9 @@ static PyObject *PyWindowItem_is_active(PyWindowItem *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindowItem_set_active_doc,
-    "Set window item active"
+    "set_active() -> None\n"
+    "\n"
+    "Set window item active\n"
 );
 static PyObject *PyWindowItem_set_active(PyWindowItem *self, PyObject *args)
 {
@@ -168,7 +180,8 @@ static PyObject *PyWindowItem_set_active(PyWindowItem *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindowItem_activity_doc,
-    "Unknown/untested"
+    "activity(data_level, hilight_color) -> None\n"
+    "\n"
 );
 static PyObject *PyWindowItem_activity(PyWindowItem *self, PyObject *args, PyObject *kwds)
 {
@@ -188,7 +201,9 @@ static PyObject *PyWindowItem_activity(PyWindowItem *self, PyObject *args, PyObj
 }
 
 PyDoc_STRVAR(PyWindowItem_destroy_doc,
-    "Destroy channel or query"
+    "destroy() -> None\n"
+    "\n"
+    "Destroy channel or query\n"
 );
 static PyObject *PyWindowItem_destroy(PyWindowItem *self, PyObject *args)
 {
@@ -200,7 +215,9 @@ static PyObject *PyWindowItem_destroy(PyWindowItem *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindowItem_get_dcc_doc,
-    "If item is a query of a =nick, return DCC chat record of nick"
+    "get_dcc() -> DccChat object or None\n"
+    "\n"
+    "If item is a query of a =nick, return DCC chat record of nick\n"
 );
 static PyObject *PyWindowItem_get_dcc(PyWindowItem *self, PyObject *args)
 {

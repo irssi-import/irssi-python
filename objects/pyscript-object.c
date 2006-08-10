@@ -380,7 +380,7 @@ static int py_settings_remove(PyScript *self, const char *name)
 }
 
 PyDoc_STRVAR(PyScript_settings_add_str_doc,
-    ""
+    "settings_add_str(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_str(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -402,7 +402,7 @@ static PyObject *PyScript_settings_add_str(PyScript *self, PyObject *args, PyObj
 }
 
 PyDoc_STRVAR(PyScript_settings_add_int_doc,
-    ""
+    "settings_add_int(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_int(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -424,7 +424,7 @@ static PyObject *PyScript_settings_add_int(PyScript *self, PyObject *args, PyObj
 }
 
 PyDoc_STRVAR(PyScript_settings_add_bool_doc,
-    ""
+    "settings_add_bool(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_bool(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -446,7 +446,7 @@ static PyObject *PyScript_settings_add_bool(PyScript *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(PyScript_settings_add_time_doc,
-    ""
+    "settings_add_time(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_time(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -468,7 +468,7 @@ static PyObject *PyScript_settings_add_time(PyScript *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(PyScript_settings_add_level_doc,
-    ""
+    "settings_add_level(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_level(PyScript *self, PyObject *args, PyObject *kwds)
 {
@@ -490,7 +490,7 @@ static PyObject *PyScript_settings_add_level(PyScript *self, PyObject *args, PyO
 }
 
 PyDoc_STRVAR(PyScript_settings_add_size_doc,
-    ""
+    "settings_add_size(section, key, def) -> None\n"
 );
 static PyObject *PyScript_settings_add_size(PyScript *self, PyObject *args, PyObject *kwds)
 {

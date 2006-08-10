@@ -5,25 +5,6 @@
 #include "channel-object.h"
 #include "pycore.h"
 
-/* member IDs */
-enum
-{
-    M_CHANNEL_TOPIC,
-    M_CHANNEL_TOPIC_BY,
-    M_CHANNEL_TOPIC_TIME,
-    M_CHANNEL_NO_MODES,
-    M_CHANNEL_MODE,
-    M_CHANNEL_LIMIT,
-    M_CHANNEL_KEY,
-    M_CHANNEL_CHANOP,
-    M_CHANNEL_NAMES_GOT,
-    M_CHANNEL_WHOLIST,
-    M_CHANNEL_SYNCED,
-    M_CHANNEL_JOINED,
-    M_CHANNEL_LEFT,
-    M_CHANNEL_KICKED,
-};
-
 /* monitor "channel destroyed" signal */
 static void chan_cleanup(CHANNEL_REC *chan)
 {
@@ -45,112 +26,171 @@ static void PyChannel_dealloc(PyChannel *self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
-
-static PyObject *PyChannel_get(PyChannel *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyChannel_topic_doc,
+    "Channel topic"
+);
+static PyObject *PyChannel_topic_get(PyChannel *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
-
     RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->topic);
+}
 
-    switch (member)
-    {
-        case M_CHANNEL_TOPIC:
-            RET_AS_STRING_OR_NONE(self->data->topic);
-        case M_CHANNEL_TOPIC_BY:
-            RET_AS_STRING_OR_NONE(self->data->topic_by);
-        case M_CHANNEL_TOPIC_TIME:
-            return PyLong_FromLong(self->data->topic_time);
-        case M_CHANNEL_NO_MODES:
-            return PyBool_FromLong(self->data->no_modes);
-        case M_CHANNEL_MODE:
-            RET_AS_STRING_OR_NONE(self->data->mode);
-        case M_CHANNEL_LIMIT:
-            return PyInt_FromLong(self->data->limit);
-        case M_CHANNEL_KEY:
-            RET_AS_STRING_OR_NONE(self->data->key);
-        case M_CHANNEL_CHANOP:
-            return PyBool_FromLong(self->data->chanop);
-        case M_CHANNEL_NAMES_GOT:
-            return PyBool_FromLong(self->data->names_got);
-        case M_CHANNEL_WHOLIST:
-            return PyBool_FromLong(self->data->wholist);
-        case M_CHANNEL_SYNCED:
-            return PyBool_FromLong(self->data->synced);
-        case M_CHANNEL_JOINED:
-            return PyBool_FromLong(self->data->joined);
-        case M_CHANNEL_LEFT:
-            return PyBool_FromLong(self->data->left);
-        case M_CHANNEL_KICKED:
-            return PyBool_FromLong(self->data->kicked);
-    }
+PyDoc_STRVAR(PyChannel_topic_by_doc,
+    "Nick who set the topic"
+);
+static PyObject *PyChannel_topic_by_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->topic_by);
+}
 
-    /* This shouldn't be reached... but... */
-    return PyErr_Format(PyExc_RuntimeError, "invalid member id, %d", member);
+PyDoc_STRVAR(PyChannel_topic_time_doc,
+    "Timestamp when the topic was set"
+);
+static PyObject *PyChannel_topic_time_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyLong_FromLong(self->data->topic_time);
+}
+
+PyDoc_STRVAR(PyChannel_no_modes_doc,
+    "Channel is modeless"
+);
+static PyObject *PyChannel_no_modes_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->no_modes);
+}
+
+PyDoc_STRVAR(PyChannel_mode_doc,
+    "Channel mode"
+);
+static PyObject *PyChannel_mode_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->mode);
+}
+
+PyDoc_STRVAR(PyChannel_limit_doc,
+    "Max. users in channel (+l mode)"
+);
+static PyObject *PyChannel_limit_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(self->data->limit);
+}
+
+PyDoc_STRVAR(PyChannel_key_doc,
+    "Channel key (password)"
+);
+static PyObject *PyChannel_key_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->key);
+}
+
+PyDoc_STRVAR(PyChannel_chanop_doc,
+    "You are channel operator"
+);
+static PyObject *PyChannel_chanop_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->chanop);
+}
+
+PyDoc_STRVAR(PyChannel_names_got_doc,
+    "/NAMES list has been received"
+);
+static PyObject *PyChannel_names_got_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->names_got);
+}
+
+PyDoc_STRVAR(PyChannel_wholist_doc,
+    "/WHO list has been received"
+);
+static PyObject *PyChannel_wholist_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->wholist);
+}
+
+PyDoc_STRVAR(PyChannel_synced_doc,
+    "Channel is fully synchronized"
+);
+static PyObject *PyChannel_synced_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->synced);
+}
+
+PyDoc_STRVAR(PyChannel_joined_doc,
+    "JOIN event for this channel has been received"
+);
+static PyObject *PyChannel_joined_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->joined);
+}
+
+PyDoc_STRVAR(PyChannel_left_doc,
+    "You just left the channel (for 'channel destroyed' event)"
+);
+static PyObject *PyChannel_left_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->left);
+}
+
+PyDoc_STRVAR(PyChannel_kicked_doc,
+    "You were just kicked out of the channel (for 'channel destroyed' event)"
+);
+static PyObject *PyChannel_kicked_get(PyChannel *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyBool_FromLong(self->data->kicked);
 }
 
 /* specialized getters/setters */
 static PyGetSetDef PyChannel_getseters[] = {
-    {"topic", (getter)PyChannel_get, NULL, 
-        "Channel topic", 
-        GINT_TO_POINTER(M_CHANNEL_TOPIC)},
-
-    {"topic_by", (getter)PyChannel_get, NULL, 
-        "Nick who set the topic", 
-        GINT_TO_POINTER(M_CHANNEL_TOPIC_BY)},
-
-    {"topic_time", (getter)PyChannel_get, NULL, 
-        "Timestamp when the topic was set", 
-        GINT_TO_POINTER(M_CHANNEL_TOPIC_TIME)},
-
-    {"no_modes", (getter)PyChannel_get, NULL, 
-        "Channel is modeless", 
-        GINT_TO_POINTER(M_CHANNEL_NO_MODES)},
-
-    {"mode", (getter)PyChannel_get, NULL, 
-        "Channel mode", 
-        GINT_TO_POINTER(M_CHANNEL_MODE)},
-
-    {"limit", (getter)PyChannel_get, NULL, 
-        "Max. users in channel (+l mode)", 
-        GINT_TO_POINTER(M_CHANNEL_LIMIT)},
-
-    {"key", (getter)PyChannel_get, NULL, 
-        "Channel key (password)", 
-        GINT_TO_POINTER(M_CHANNEL_KEY)},
-
-    {"chanop", (getter)PyChannel_get, NULL, 
-        "You are channel operator", 
-        GINT_TO_POINTER(M_CHANNEL_CHANOP)},
-
-    {"names_got", (getter)PyChannel_get, NULL, 
-        "/NAMES list has been received", 
-        GINT_TO_POINTER(M_CHANNEL_NAMES_GOT)},
-
-    {"wholist", (getter)PyChannel_get, NULL, 
-        "/WHO list has been received", 
-        GINT_TO_POINTER(M_CHANNEL_WHOLIST)},
-
-    {"synced", (getter)PyChannel_get, NULL, 
-        "Channel is fully synchronized", 
-        GINT_TO_POINTER(M_CHANNEL_SYNCED)},
-
-    {"joined", (getter)PyChannel_get, NULL, 
-        "JOIN event for this channel has been received", 
-        GINT_TO_POINTER(M_CHANNEL_JOINED)},
-
-    {"left", (getter)PyChannel_get, NULL, 
-        "You just left the channel (for 'channel destroyed' event)", 
-        GINT_TO_POINTER(M_CHANNEL_LEFT)},
-
-    {"kicked", (getter)PyChannel_get, NULL, 
-        "You was just kicked out of the channel (for 'channel destroyed' event)", 
-        GINT_TO_POINTER(M_CHANNEL_KICKED)},
-
+    {"topic", (getter)PyChannel_topic_get, NULL,
+        PyChannel_topic_doc, NULL},
+    {"topic_by", (getter)PyChannel_topic_by_get, NULL,
+        PyChannel_topic_by_doc, NULL},
+    {"topic_time", (getter)PyChannel_topic_time_get, NULL,
+        PyChannel_topic_time_doc, NULL},
+    {"no_modes", (getter)PyChannel_no_modes_get, NULL,
+        PyChannel_no_modes_doc, NULL},
+    {"mode", (getter)PyChannel_mode_get, NULL,
+        PyChannel_mode_doc, NULL},
+    {"limit", (getter)PyChannel_limit_get, NULL,
+        PyChannel_limit_doc, NULL},
+    {"key", (getter)PyChannel_key_get, NULL,
+        PyChannel_key_doc, NULL},
+    {"chanop", (getter)PyChannel_chanop_get, NULL,
+        PyChannel_chanop_doc, NULL},
+    {"names_got", (getter)PyChannel_names_got_get, NULL,
+        PyChannel_names_got_doc, NULL},
+    {"wholist", (getter)PyChannel_wholist_get, NULL,
+        PyChannel_wholist_doc, NULL},
+    {"synced", (getter)PyChannel_synced_get, NULL,
+        PyChannel_synced_doc, NULL},
+    {"joined", (getter)PyChannel_joined_get, NULL,
+        PyChannel_joined_doc, NULL},
+    {"left", (getter)PyChannel_left_get, NULL,
+        PyChannel_left_doc, NULL},
+    {"kicked", (getter)PyChannel_kicked_get, NULL,
+        PyChannel_kicked_doc, NULL},
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(PyChannel_nicks_doc,
-    "Return a list of nicks in the channel."
+    "nicks() -> list of Nick objects\n"
+    "\n"
+    "Return a list of nicks in the channel.\n"
 );
 static PyObject *PyChannel_nicks(PyChannel *self, PyObject *args)
 {
@@ -160,7 +200,9 @@ static PyObject *PyChannel_nicks(PyChannel *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyChannel_nicks_find_mask_doc,
-    "Find nick mask from nicklist, wildcards allowed."
+    "nicks_find_mask(mask) -> Nick object or None\n"
+    "\n"
+    "Find nick mask from nicklist, wildcards allowed.\n"
 );
 static PyObject *PyChannel_nicks_find_mask(PyChannel *self, PyObject *args, PyObject *kwds)
 {
@@ -177,7 +219,9 @@ static PyObject *PyChannel_nicks_find_mask(PyChannel *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(PyChannel_nick_find_doc,
-    "Find nick from nicklist."
+    "nick_find(nick) -> Nick object or None\n"
+    "\n"
+    "Find nick from nicklist.\n"
 );
 static PyObject *PyChannel_nick_find(PyChannel *self, PyObject *args, PyObject *kwds)
 {
@@ -194,7 +238,9 @@ static PyObject *PyChannel_nick_find(PyChannel *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(PyChannel_nick_remove_doc,
-    "Remove nick from nicklist."
+    "nick_remove(nick) -> None\n"
+    "\n"
+    "Remove nick from nicklist.\n"
 );
 static PyObject *PyChannel_nick_remove(PyChannel *self, PyObject *args, PyObject *kwds)
 {
@@ -216,7 +262,9 @@ static PyObject *PyChannel_nick_remove(PyChannel *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(PyChannel_nick_insert_obj_doc,
-    "Insert nick object into nicklist."
+    "nick_insert(nick) -> None\n"
+    "\n"
+    "Insert nick object into nicklist.\n"
 );
 static PyObject *PyChannel_nick_insert_obj(PyChannel *self, PyObject *args, PyObject *kwds)
 {

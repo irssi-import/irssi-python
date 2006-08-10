@@ -82,11 +82,47 @@ static PyObject *PyStatusbarItem_window_get(PyStatusbarItem *self, void *closure
     RET_AS_OBJ_OR_NONE(self->window);
 }
 
+/* setters */
+static int py_setint(int *iv, PyObject *value)
+{
+    int tmp;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_AttributeError, "can't delete member");
+        return -1;
+    }
+
+    if (!PyInt_Check(value))
+    {
+        PyErr_SetString(PyExc_TypeError, "value must be int");
+        return -1;
+    }
+   
+    tmp = PyInt_AsLong(value);
+    if (PyErr_Occurred())
+        return -1;
+   
+    *iv = tmp;
+
+    return 0;
+}
+
+static int PyStatusbarItem_min_size_set(PyStatusbarItem *self, PyObject *value, void *closure)
+{
+    return py_setint(&self->data->min_size, value);
+}
+
+static int PyStatusbarItem_max_size_set(PyStatusbarItem *self, PyObject *value, void *closure)
+{
+    return py_setint(&self->data->max_size, value);
+}
+
 /* specialized getters/setters */
 static PyGetSetDef PyStatusbarItem_getseters[] = {
-    {"min_size", (getter)PyStatusbarItem_min_size_get, NULL,
+    {"min_size", (getter)PyStatusbarItem_min_size_get, (setter)PyStatusbarItem_min_size_set,
         PyStatusbarItem_min_size_doc, NULL},
-    {"max_size", (getter)PyStatusbarItem_max_size_get, NULL,
+    {"max_size", (getter)PyStatusbarItem_max_size_get, (setter)PyStatusbarItem_max_size_set,
         PyStatusbarItem_max_size_doc, NULL},
     {"xpos", (getter)PyStatusbarItem_xpos_get, NULL,
         PyStatusbarItem_xpos_doc, NULL},

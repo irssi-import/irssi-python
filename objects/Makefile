@@ -16,7 +16,7 @@ rawlog-object.o log-object.o logitem-object.o ignore-object.o \
 dcc-object.o dcc-chat-object.o dcc-get-object.o dcc-send-object.o \
 netsplit-object.o netsplit-server-object.o netsplit-channel-object.o \
 notifylist-object.o process-object.o command-object.o theme-object.o \
-statusbar-item-object.o factory.o
+statusbar-item-object.o main-window-object.o factory.o
 
 pyobjects.a: $(OBJ)
 	ar r pyobjects.a $(OBJ)

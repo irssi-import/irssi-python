@@ -58,7 +58,9 @@ static PyGetSetDef PyRawlog_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyRawlog_get_lines_doc,
-    "Return a list of lines for rawlog."
+    "get_lines() -> list of str\n"
+    "\n"
+    "Return a list of lines for rawlog.\n"
 );
 static PyObject *PyRawlog_get_lines(PyRawlog *self, PyObject *args)
 {
@@ -77,23 +79,27 @@ static PyObject *PyRawlog_get_lines(PyRawlog *self, PyObject *args)
         PyObject *line = PyString_FromString(node->data);
 
         if (!line)
-            goto error;
+        {
+            Py_XDECREF(lines);
+            return NULL;
+        }
 
         ret = PyList_Append(lines, line);
         Py_DECREF(line);
         if (ret != 0)
-            goto error;
+        {
+            Py_XDECREF(lines);
+            return NULL;
+        }
     }
   
     return lines;
-
-error:
-    Py_XDECREF(lines);
-    return NULL;
 }
 
 PyDoc_STRVAR(PyRawlog_destroy_doc,
-    "Destroy rawlog"
+    "destroy() -> None\n"
+    "\n"
+    "Destroy rawlog\n"
 );
 static PyObject *PyRawlog_destroy(PyRawlog *self, PyObject *args)
 {
@@ -108,7 +114,9 @@ static PyObject *PyRawlog_destroy(PyRawlog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyRawlog_input_doc,
-    "Send str to rawlog as input text."
+    "input(str) -> None\n"
+    "\n"
+    "Send str to rawlog as input text.\n"
 );
 static PyObject *PyRawlog_input(PyRawlog *self, PyObject *args, PyObject *kwds)
 {
@@ -127,7 +135,9 @@ static PyObject *PyRawlog_input(PyRawlog *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyRawlog_output_doc,
-    "Send str to rawlog as output text."
+    "output(str) -> None\n"
+    "\n"
+    "Send str to rawlog as output text.\n"
 );
 static PyObject *PyRawlog_output(PyRawlog *self, PyObject *args, PyObject *kwds)
 {
@@ -146,6 +156,8 @@ static PyObject *PyRawlog_output(PyRawlog *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyRawlog_redirect_doc,
+    "redirect(str) -> None\n"
+    "\n"
     "Send str to rawlog as redirection text."
 );
 static PyObject *PyRawlog_redirect(PyRawlog *self, PyObject *args, PyObject *kwds)
@@ -165,7 +177,9 @@ static PyObject *PyRawlog_redirect(PyRawlog *self, PyObject *args, PyObject *kwd
 }
 
 PyDoc_STRVAR(PyRawlog_open_doc,
-    "Start logging new messages in rawlog to specified file."
+    "open(fname) -> None\n"
+    "\n"
+    "Start logging new messages in rawlog to specified file.\n"
 );
 static PyObject *PyRawlog_open(PyRawlog *self, PyObject *args, PyObject *kwds)
 {
@@ -184,7 +198,9 @@ static PyObject *PyRawlog_open(PyRawlog *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyRawlog_close_doc,
-    "Stop logging to file"
+    "close() -> None\n"
+    "\n"
+    "Stop logging to file\n"
 );
 static PyObject *PyRawlog_close(PyRawlog *self, PyObject *args)
 {
@@ -196,7 +212,9 @@ static PyObject *PyRawlog_close(PyRawlog *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyRawlog_save_doc,
-    "Save the current rawlog history to specified file."
+    "save(fname) -> None\n"
+    "\n"
+    "Save the current rawlog history to specified file.\n"
 );
 static PyObject *PyRawlog_save(PyRawlog *self, PyObject *args, PyObject *kwds)
 {
@@ -213,7 +231,6 @@ static PyObject *PyRawlog_save(PyRawlog *self, PyObject *args, PyObject *kwds)
     
     Py_RETURN_NONE;
 }
-
 /* Methods for object */
 static PyMethodDef PyRawlog_methods[] = {
     {"get_lines", (PyCFunction)PyRawlog_get_lines, METH_NOARGS,

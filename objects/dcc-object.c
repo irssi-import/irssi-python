@@ -185,7 +185,9 @@ static PyGetSetDef PyDcc_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyDcc_destroy_doc,
-    "Destroy DCC connection"
+    "destroy() -> None\n"
+    "\n"
+    "Destroy DCC connection\n"
 );
 static PyObject *PyDcc_destroy(PyDcc *self, PyObject *args)
 {
@@ -197,7 +199,9 @@ static PyObject *PyDcc_destroy(PyDcc *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyDcc_reject_doc,
-    "?"
+    "reject() -> None\n"
+    "\n"
+    "?\n"
 );
 static PyObject *PyDcc_reject(PyDcc *self, PyObject *args, PyObject *kwds)
 {
@@ -219,7 +223,9 @@ static PyObject *PyDcc_reject(PyDcc *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyDcc_close_doc,
-    "Close and destroy DCC connection"
+    "close() -> None\n"
+    "\n"
+    "Close and destroy DCC connection.\n"
 );
 static PyObject *PyDcc_close(PyDcc *self, PyObject *args)
 {
@@ -295,18 +301,24 @@ PyObject *pydcc_sub_new(void *dcc, const char *name, PyTypeObject *subclass)
     if (!server)
         return NULL;
 
-    //XXX: do dcc chat
-    
+    chat = py_irssi_chat_new(rec->chat, 1);
+    if (!chat)
+    {
+        Py_DECREF(server);
+        return NULL;
+    }
+
     pydcc = py_instp(PyDcc, subclass);
     if (!pydcc)
     {
-        Py_XDECREF(server);
-        Py_XDECREF(chat);
+        Py_DECREF(server);
+        Py_DECREF(chat);
         return NULL;
     }
 
     pydcc->data = dcc;
     pydcc->server = server;
+    pydcc->chat = chat;
     pydcc->base_name = name;
 
     pydcc->cleanup_installed = 1;

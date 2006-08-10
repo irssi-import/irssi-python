@@ -4,6 +4,7 @@
 #include "pyirssi.h"
 #include "irc.h"
 #include "irc-servers.h"
+#include "servers-redirect.h"
 #include "irc-channels.h"
 #include "ctcp.h"
 #include "mode-lists.h"

@@ -6,18 +6,6 @@
 #include "pycore.h"
 #include "pyutils.h"
 
-/* member IDs */
-enum
-{
-    M_CONNECT_ADDRESS,
-    M_CONNECT_PORT,
-    M_CONNECT_CHATNET,
-    M_CONNECT_PASSWORD,
-    M_CONNECT_WANTED_NICK,
-    M_CONNECT_USERNAME,
-    M_CONNECT_REALNAME,
-};
-
 static void connect_cleanup(SERVER_CONNECT_REC *connect)
 {
     PyConnect *pyconn = signal_get_user_data();
@@ -40,63 +28,86 @@ static void PyConnect_dealloc(PyConnect *self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *PyConnect_get(PyConnect *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyConnect_address_doc,
+    "Address where we connected (irc.blah.org)"
+);
+static PyObject *PyConnect_address_get(PyConnect *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
-
     RET_NULL_IF_INVALID(self->data);
-
-    switch (member)
-    {
-        case M_CONNECT_ADDRESS:
-            RET_AS_STRING_OR_NONE(self->data->address);
-        case M_CONNECT_PORT:
-            return PyInt_FromLong(self->data->port);
-        case M_CONNECT_CHATNET:
-            RET_AS_STRING_OR_NONE(self->data->chatnet);
-        case M_CONNECT_PASSWORD:
-            RET_AS_STRING_OR_NONE(self->data->password);
-        case M_CONNECT_WANTED_NICK:
-            RET_AS_STRING_OR_NONE(self->data->nick);
-        case M_CONNECT_USERNAME:
-            RET_AS_STRING_OR_NONE(self->data->username);
-        case M_CONNECT_REALNAME:
-            RET_AS_STRING_OR_NONE(self->data->realname);
-    }
-
-    /* This shouldn't be reached... but... */
-    return PyErr_Format(PyExc_RuntimeError, "invalid member id, %d", member);
+    RET_AS_STRING_OR_NONE(self->data->address);
 }
 
+PyDoc_STRVAR(PyConnect_port_doc,
+    "Port where we're connected"
+);
+static PyObject *PyConnect_port_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(self->data->port);
+}
+
+PyDoc_STRVAR(PyConnect_chatnet_doc,
+    "Chat network"
+);
+static PyObject *PyConnect_chatnet_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->chatnet);
+}
+
+PyDoc_STRVAR(PyConnect_password_doc,
+    "Password we used in connection."
+);
+static PyObject *PyConnect_password_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->password);
+}
+
+PyDoc_STRVAR(PyConnect_wanted_nick_doc,
+    "Nick which we would prefer to use"
+);
+static PyObject *PyConnect_wanted_nick_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->nick);
+}
+
+PyDoc_STRVAR(PyConnect_username_doc,
+    "User name"
+);
+static PyObject *PyConnect_username_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->username);
+}
+
+PyDoc_STRVAR(PyConnect_realname_doc,
+    "Real name"
+);
+static PyObject *PyConnect_realname_get(PyConnect *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->data->realname);
+}
+
+/* Get/Set */
 static PyGetSetDef PyConnect_getseters[] = {
-    {"address", (getter)PyConnect_get, NULL, 
-        "Address where we connected (irc.blah.org)", 
-        GINT_TO_POINTER(M_CONNECT_ADDRESS)},
-
-    {"port", (getter)PyConnect_get, NULL, 
-        "Port where we connected",
-        GINT_TO_POINTER(M_CONNECT_PORT)},
-
-    {"chatnet", (getter)PyConnect_get, NULL, 
-        "Chat network",
-        GINT_TO_POINTER(M_CONNECT_CHATNET)},
-
-    {"password", (getter)PyConnect_get, NULL, 
-        "Password we used in connection.",
-        GINT_TO_POINTER(M_CONNECT_PASSWORD)},
-
-    {"wanted_nick", (getter)PyConnect_get, NULL, 
-        "Nick which we would prefer to use",
-        GINT_TO_POINTER(M_CONNECT_WANTED_NICK)},
-
-    {"username", (getter)PyConnect_get, NULL, 
-        "User name",
-        GINT_TO_POINTER(M_CONNECT_USERNAME)},
-
-    {"realname", (getter)PyConnect_get, NULL, 
-        "Real name",
-        GINT_TO_POINTER(M_CONNECT_REALNAME)},
-
+    {"address", (getter)PyConnect_address_get, NULL,
+        PyConnect_address_doc, NULL},
+    {"port", (getter)PyConnect_port_get, NULL,
+        PyConnect_port_doc, NULL},
+    {"chatnet", (getter)PyConnect_chatnet_get, NULL,
+        PyConnect_chatnet_doc, NULL},
+    {"password", (getter)PyConnect_password_get, NULL,
+        PyConnect_password_doc, NULL},
+    {"wanted_nick", (getter)PyConnect_wanted_nick_get, NULL,
+        PyConnect_wanted_nick_doc, NULL},
+    {"username", (getter)PyConnect_username_get, NULL,
+        PyConnect_username_doc, NULL},
+    {"realname", (getter)PyConnect_realname_get, NULL,
+        PyConnect_realname_doc, NULL},
     {NULL}
 };
 

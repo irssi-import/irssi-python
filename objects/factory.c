@@ -124,6 +124,9 @@ static int init_objects(void)
 
     if (!statusbar_item_object_init())
         return 0;
+    
+    if (!main_window_object_init())
+        return 0;
 
     return 1;
 }

@@ -6,35 +6,22 @@
 #include "pycore.h"
 #include "pyutils.h"
 
-/* member IDs */
-enum
-{
-    M_IRC_CONNECT_ALTERNATE_NICK,
-};
-
 /* cleanup and deallocation handled by Connect base */
 
-static PyObject *PyIrcConnect_get(PyIrcConnect *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyIrcConnect_alternate_nick_doc,
+    "Alternate nick to use if default nick is taken"
+);
+static PyObject *PyIrcConnect_alternate_nick_get(PyIrcConnect *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
-
     RET_NULL_IF_INVALID(self->data);
-
-    switch (member)
-    {
-        case M_IRC_CONNECT_ALTERNATE_NICK:
-            RET_AS_STRING_OR_NONE(self->data->alternate_nick);
-    }
-
-    /* This shouldn't be reached... but... */
-    return PyErr_Format(PyExc_RuntimeError, "invalid member id, %d", member);
+    RET_AS_STRING_OR_NONE(self->data->alternate_nick);
 }
 
+/* Get/Set */
 static PyGetSetDef PyIrcConnect_getseters[] = {
-    {"alternate_nick", (getter)PyIrcConnect_get, NULL, 
-        "Alternate nick to use if default nick is taken",
-        GINT_TO_POINTER(M_IRC_CONNECT_ALTERNATE_NICK)},
-
+    {"alternate_nick", (getter)PyIrcConnect_alternate_nick_get, NULL,
+        PyIrcConnect_alternate_nick_doc, NULL},
     {NULL}
 };
 

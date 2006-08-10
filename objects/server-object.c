@@ -206,6 +206,8 @@ static PyGetSetDef PyServer_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(print_doc,
+    "prnt(channel, str, level) -> None\n"
+    "\n"
     "Print to server\n"
 );
 static PyObject *PyServer_prnt(PyServer *self, PyObject *args, PyObject *kwds)
@@ -225,6 +227,8 @@ static PyObject *PyServer_prnt(PyServer *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(command_doc,
+    "command(cmd) -> None\n"
+    "\n"
     "Send command\n"
 );
 static PyObject *PyServer_command(PyServer *self, PyObject *args, PyObject *kwds)
@@ -243,6 +247,8 @@ static PyObject *PyServer_command(PyServer *self, PyObject *args, PyObject *kwds
 }
 
 PyDoc_STRVAR(disconnect_doc,
+    "disconnect() -> None\n"
+    "\n"
     "Disconnect from server\n"
 );
 static PyObject *PyServer_disconnect(PyServer *self, PyObject *args)
@@ -255,6 +261,8 @@ static PyObject *PyServer_disconnect(PyServer *self, PyObject *args)
 }
 
 PyDoc_STRVAR(isnickflag_doc,
+    "isnickflag(flag) -> bool\n"
+    "\n"
     "Returns True if flag is a nick mode flag (@, + or % in IRC)\n"
 );
 static PyObject *PyServer_isnickflag(PyServer *self, PyObject *args, PyObject *kwds)
@@ -274,6 +282,8 @@ static PyObject *PyServer_isnickflag(PyServer *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(ischannel_doc,
+    "ischannel(data) -> bool\n"
+    "\n"
     "Returns True if start of `data' seems to mean channel.\n"
 );
 static PyObject *PyServer_ischannel(PyServer *self, PyObject *args, PyObject *kwds)
@@ -293,6 +303,8 @@ static PyObject *PyServer_ischannel(PyServer *self, PyObject *args, PyObject *kw
 }
 
 PyDoc_STRVAR(get_nick_flags_doc,
+    "get_nick_flags() -> str\n"
+    "\n"
     "Returns nick flag characters in order: op, voice, halfop (\"@+%\") in IRC\n"
 );
 static PyObject *PyServer_get_nick_flags(PyServer *self, PyObject *args)
@@ -307,6 +319,8 @@ static PyObject *PyServer_get_nick_flags(PyServer *self, PyObject *args)
 }
 
 PyDoc_STRVAR(send_message_doc,
+    "send_message(target, msg, target_type) -> None\n"
+    "\n"
     "Sends a message to nick/channel. target_type 0 = channel, 1 = nick\n"
 );
 static PyObject *PyServer_send_message(PyServer *self, PyObject *args, PyObject *kwds)
@@ -326,7 +340,7 @@ static PyObject *PyServer_send_message(PyServer *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(channels_join_doc,
-    "    channels_join(channels, automatic=False) -> None\n"
+    "channels_join(channels, automatic=False) -> None\n"
     "\n"
     "Join to channels in server. `channels' may also contain keys for\n"
     "channels just like with /JOIN command. `automatic' specifies if this\n"
@@ -351,7 +365,9 @@ static PyObject *PyServer_channels_join(PyServer *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(PyServer_window_item_find_doc,
-    "Find window item that matches best to given arguments"
+    "window_item_find(name) -> WindowItem object or None\n"
+    "\n"
+    "Find window item that matches best to given arguments\n"
 );
 static PyObject *PyServer_window_item_find(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -368,7 +384,9 @@ static PyObject *PyServer_window_item_find(PyServer *self, PyObject *args, PyObj
 }
 
 PyDoc_STRVAR(PyServer_window_find_item_doc,
-    "Find window which contains window item with specified name/server"
+    "window_find_item(name) -> Window object or None\n"
+    "\n"
+    "Find window which contains window item with specified name/server\n"
 );
 static PyObject *PyServer_window_find_item(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -390,7 +408,9 @@ static PyObject *PyServer_window_find_item(PyServer *self, PyObject *args, PyObj
 }
 
 PyDoc_STRVAR(PyServer_window_find_level_doc,
-    "Find window with level"
+    "window_find_level(level) -> Window object or None\n"
+    "\n"
+    "Find window with level\n"
 );
 static PyObject *PyServer_window_find_level(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -412,6 +432,8 @@ static PyObject *PyServer_window_find_level(PyServer *self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(PyServer_window_find_closest_doc,
+    "window_find_closest(name, level) -> Window object or None\n"
+    "\n"
     "Find window that matches best to given arguments. `name' can be either\n"
     "window name or name of one of the window items.\n"
 );
@@ -436,7 +458,9 @@ static PyObject *PyServer_window_find_closest(PyServer *self, PyObject *args, Py
 }
 
 PyDoc_STRVAR(PyServer_channels_doc,
-    "Return list of channels for server"
+    "channels() -> list of Channel objects\n"
+    "\n"
+    "Return list of channels for server\n"
 );
 static PyObject *PyServer_channels(PyServer *self, PyObject *args)
 {
@@ -446,7 +470,9 @@ static PyObject *PyServer_channels(PyServer *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyServer_channel_find_doc,
-    "Find channel from this server"
+    "channel_find(name) -> Channel object or None\n"
+    "\n"
+    "Find channel from this server\n"
 );
 static PyObject *PyServer_channel_find(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -463,6 +489,8 @@ static PyObject *PyServer_channel_find(PyServer *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(PyServer_nicks_get_same_doc,
+    "nicks_get_same(nick)\n"
+    "\n"
     "Return all nick objects in all channels in server. List is in format:\n"
     "[(Channel, Nick), (Channel, Nick), ...]\n"
 );
@@ -493,23 +521,27 @@ static PyObject *PyServer_nicks_get_same(PyServer *self, PyObject *args, PyObjec
                 py_irssi_chat_new(node->data, 1), 
                 py_irssi_chat_new(node->next->data, 1));
         if (!tup)
-            goto error;
+        {
+            Py_XDECREF(pylist);
+            return NULL;
+        }
         
         ret = PyList_Append(pylist, tup);
         Py_DECREF(tup);
         if (ret != 0)
-            goto error;
+        {
+            Py_XDECREF(pylist);
+            return NULL;
+        }
     }
 
     return pylist;
-
-error:
-    Py_XDECREF(pylist);
-    return NULL;
 }
 
 PyDoc_STRVAR(PyServer_queries_doc,
-    "Return a list of queries for server."
+    "queries() -> list of Query objects\n"
+    "\n"
+    "Return a list of queries for server.\n"
 );
 static PyObject *PyServer_queries(PyServer *self, PyObject *args)
 {
@@ -519,7 +551,9 @@ static PyObject *PyServer_queries(PyServer *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyServer_query_find_doc,
-    "Find a query on this server."
+    "query_find(nick) -> Query object or None\n"
+    "\n"
+    "Find a query on this server.\n"
 );
 static PyObject *PyServer_query_find(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -536,7 +570,9 @@ static PyObject *PyServer_query_find(PyServer *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(PyServer_mask_match_doc,
-    "Return true if mask matches nick!user@host"
+    "mask_match(mask, nick, user, host) -> bool\n"
+    "\n"
+    "Return true if mask matches nick!user@host\n"
 );
 static PyObject *PyServer_mask_match(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -556,7 +592,9 @@ static PyObject *PyServer_mask_match(PyServer *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(PyServer_mask_match_address_doc,
-    "Return True if mask matches nick!address"
+    "mask_match_address(mask, nick, address) -> bool\n"
+    "\n"
+    "Return True if mask matches nick!address\n"
 );
 static PyObject *PyServer_mask_match_address(PyServer *self, PyObject *args, PyObject *kwds)
 {
@@ -575,6 +613,8 @@ static PyObject *PyServer_mask_match_address(PyServer *self, PyObject *args, PyO
 }
 
 PyDoc_STRVAR(PyServer_masks_match_doc,
+    "masks_match(masks, nick, address) -> bool\n"
+    "\n"
     "Return True if any mask in the masks (string separated by spaces)\n"
     "matches nick!address\n"
 );
@@ -595,7 +635,9 @@ static PyObject *PyServer_masks_match(PyServer *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(PyServer_ignore_check_doc,
-    "Return True if ignore matches"
+    "ignore_check(nick, host, channel, text, level) -> bool\n"
+    "\n"
+    "Return True if ignore matches\n"
 );
 static PyObject *PyServer_ignore_check(PyServer *self, PyObject *args, PyObject *kwds)
 {

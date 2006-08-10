@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "printtext.h"
 #include "statusbar.h"
+#include "mainwindows.h"
 #include "window-items.h"
 #include "window-activity.h"
 #include "levels.h"

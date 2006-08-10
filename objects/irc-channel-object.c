@@ -12,16 +12,23 @@ static PyGetSetDef PyIrcChannel_getseters[] = {
     {NULL}
 };
 
+/* Methods */
 PyDoc_STRVAR(bans_doc,
-    "Returns a list of bans in the channel."
+    "bans() -> list of Ban objects\n"
+    "\n"
+    "Returns a list of bans in the channel.\n"
 );
 static PyObject *PyIrcChannel_bans(PyIrcChannel *self, PyObject *args)
 {
+    RET_NULL_IF_INVALID(self->data);
+
     return py_irssi_objlist_new(self->data->banlist, 1, (InitFunc)pyban_new);
 }
 
 PyDoc_STRVAR(ban_get_mask_doc,
-    "Get ban mask for 'nick'."
+    "ban_get_mask(nick, ban_type=0) -> str\n"
+    "\n"
+    "Get ban mask for 'nick'.\n"
 );
 static PyObject *PyIrcChannel_ban_get_mask(PyIrcChannel *self, PyObject *args, PyObject *kwds)
 {
@@ -46,6 +53,8 @@ static PyObject *PyIrcChannel_ban_get_mask(PyIrcChannel *self, PyObject *args, P
 }
 
 PyDoc_STRVAR(banlist_add_doc,
+    "banlist_add(ban, nick, time) -> Ban object or None\n"
+    "\n"
     "Add a new ban to channel. Return None if duplicate."
 );
 static PyObject *PyIrcChannel_banlist_add(PyIrcChannel *self, PyObject *args, PyObject *kwds)
@@ -69,7 +78,9 @@ static PyObject *PyIrcChannel_banlist_add(PyIrcChannel *self, PyObject *args, Py
 }
 
 PyDoc_STRVAR(banlist_remove_doc,
-    "Remove a new ban from channel."
+    "banlist_remove(ban, nick) -> None\n"
+    "\n"
+    "Remove a new ban from channel.\n"
 );
 static PyObject *PyIrcChannel_banlist_remove(PyIrcChannel *self, PyObject *args, PyObject *kwds)
 {
@@ -89,16 +100,12 @@ static PyObject *PyIrcChannel_banlist_remove(PyIrcChannel *self, PyObject *args,
 static PyMethodDef PyIrcChannel_methods[] = {
     {"bans", (PyCFunction)PyIrcChannel_bans, METH_NOARGS, 
         bans_doc},
-
     {"ban_get_mask", (PyCFunction)PyIrcChannel_ban_get_mask, METH_VARARGS | METH_KEYWORDS, 
         ban_get_mask_doc},
-
     {"banlist_add", (PyCFunction)PyIrcChannel_banlist_add, METH_VARARGS | METH_KEYWORDS, 
         banlist_add_doc},
-
     {"banlist_remove", (PyCFunction)PyIrcChannel_banlist_remove, METH_VARARGS | METH_KEYWORDS, 
         banlist_remove_doc},
-
     {NULL}  /* Sentinel */
 };
 

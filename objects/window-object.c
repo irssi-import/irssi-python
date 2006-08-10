@@ -213,7 +213,9 @@ static PyGetSetDef PyWindow_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(PyWindow_items_doc,
-    "Return a list of items in window."
+    "items() -> list of WindowItem objects\n"
+    "\n"
+    "Return a list of items in window.\n"
 );
 static PyObject *PyWindow_items(PyWindow *self, PyObject *args)
 {
@@ -222,7 +224,9 @@ static PyObject *PyWindow_items(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_prnt_doc,
-    "Print to window"
+    "prnt(str, level=MSGLEVEL_CLIENTNOTICE) -> None\n"
+    "\n"
+    "Print to window\n"
 );
 static PyObject *PyWindow_prnt(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -242,7 +246,9 @@ static PyObject *PyWindow_prnt(PyWindow *self, PyObject *args, PyObject *kwds)
 }
 
 PyDoc_STRVAR(PyWindow_command_doc,
-    "Send command to window"
+    "command(cmd) -> None\n"
+    "\n"
+    "Send command to window\n"
 );
 static PyObject *PyWindow_command(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -266,7 +272,7 @@ static PyObject *PyWindow_command(PyWindow *self, PyObject *args, PyObject *kwds
 }
 
 PyDoc_STRVAR(PyWindow_item_add_doc,
-    "   item_add(item, automatic=False) -> None\n"
+    "item_add(item, automatic=False) -> None\n"
     "\n"
     "Add window item\n"
 );
@@ -291,7 +297,9 @@ static PyObject *PyWindow_item_add(PyWindow *self, PyObject *args, PyObject *kwd
 }
 
 PyDoc_STRVAR(PyWindow_item_remove_doc,
-    "Remove window item"
+    "item_remove(item) -> None\n"
+    "\n"
+    "Remove window item\n"
 );
 static PyObject *PyWindow_item_remove(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -313,7 +321,9 @@ static PyObject *PyWindow_item_remove(PyWindow *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(PyWindow_item_destroy_doc,
-    "Destroy window item"
+    "item_destroy(item) -> None\n"
+    "\n"
+    "Destroy window item\n"
 );
 static PyObject *PyWindow_item_destroy(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -335,7 +345,9 @@ static PyObject *PyWindow_item_destroy(PyWindow *self, PyObject *args, PyObject 
 }
 
 PyDoc_STRVAR(PyWindow_item_prev_doc,
-    "Change to previous window item"
+    "item_prev() -> None\n"
+    "\n"
+    "Change to previous window item\n"
 );
 static PyObject *PyWindow_item_prev(PyWindow *self, PyObject *args)
 {
@@ -347,7 +359,9 @@ static PyObject *PyWindow_item_prev(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_item_next_doc,
-    "Change to next window item"
+    "item_next() -> None\n"
+    "\n"
+    "Change to next window item\n"
 );
 static PyObject *PyWindow_item_next(PyWindow *self, PyObject *args)
 {
@@ -359,7 +373,9 @@ static PyObject *PyWindow_item_next(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_destroy_doc,
-    "Destroy the window."
+    "destroy() -> None\n"
+    "\n"
+    "Destroy the window.\n"
 );
 static PyObject *PyWindow_destroy(PyWindow *self, PyObject *args)
 {
@@ -371,7 +387,9 @@ static PyObject *PyWindow_destroy(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_set_active_doc,
-    "Set window active."
+    "set_active() -> None\n"
+    "\n"
+    "Set window active.\n"
 );
 static PyObject *PyWindow_set_active(PyWindow *self, PyObject *args)
 {
@@ -383,7 +401,9 @@ static PyObject *PyWindow_set_active(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_change_server_doc,
-    "Change server in window"
+    "change_server(server) -> None\n"
+    "\n"
+    "Change server in window\n"
 );
 static PyObject *PyWindow_change_server(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -405,7 +425,9 @@ static PyObject *PyWindow_change_server(PyWindow *self, PyObject *args, PyObject
 }
 
 PyDoc_STRVAR(PyWindow_set_refnum_doc,
-    "Set window refnum"
+    "set_refnum(refnum) -> None\n"
+    "\n"
+    "Set window refnum\n"
 );
 static PyObject *PyWindow_set_refnum(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -424,7 +446,9 @@ static PyObject *PyWindow_set_refnum(PyWindow *self, PyObject *args, PyObject *k
 }
 
 PyDoc_STRVAR(PyWindow_set_name_doc,
-    "Set window name"
+    "set_name(name) -> None\n"
+    "\n"
+    "Set window name\n"
 );
 static PyObject *PyWindow_set_name(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -442,9 +466,10 @@ static PyObject *PyWindow_set_name(PyWindow *self, PyObject *args, PyObject *kwd
     Py_RETURN_NONE;
 }
 
-/* Methods for object */
 PyDoc_STRVAR(PyWindow_set_history_doc,
-    "Set window history"
+    "set_history(history) -> None\n"
+    "\n"
+    "Set window history\n"
 );
 static PyObject *PyWindow_set_history(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -463,7 +488,9 @@ static PyObject *PyWindow_set_history(PyWindow *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(PyWindow_set_level_doc,
-    "Set window level"
+    "set_level(level) -> None\n"
+    "\n"
+    "Set window level\n"
 );
 static PyObject *PyWindow_set_level(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -482,7 +509,8 @@ static PyObject *PyWindow_set_level(PyWindow *self, PyObject *args, PyObject *kw
 }
 
 PyDoc_STRVAR(PyWindow_activity_doc,
-    "Unknown/Untested"
+    "activity(data_level, hilight_color) -> None\n"
+    "\n"
 );
 static PyObject *PyWindow_activity(PyWindow *self, PyObject *args, PyObject *kwds)
 {
@@ -502,7 +530,9 @@ static PyObject *PyWindow_activity(PyWindow *self, PyObject *args, PyObject *kwd
 }
 
 PyDoc_STRVAR(PyWindow_get_active_name_doc,
-    "Return active item's name, or if none is active, window's name."
+    "get_active_name() -> str or None\n"
+    "\n"
+    "Return active item's name, or if none is active, window's name.\n"
 );
 static PyObject *PyWindow_get_active_name(PyWindow *self, PyObject *args)
 {
@@ -511,7 +541,9 @@ static PyObject *PyWindow_get_active_name(PyWindow *self, PyObject *args)
 }
 
 PyDoc_STRVAR(PyWindow_item_find_doc,
-    "Find window item that matches best to given arguments"
+    "item_find(server, name) -> WindowItem or None\n"
+    "\n"
+    "Find window item that matches best to given arguments\n"
 );
 static PyObject *PyWindow_item_find(PyWindow *self, PyObject *args, PyObject *kwds)
 {

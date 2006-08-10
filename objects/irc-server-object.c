@@ -49,6 +49,8 @@ static PyGetSetDef PyIrcServer_getseters[] = {
 
 /* Methods */
 PyDoc_STRVAR(get_channels_doc,
+    "get_channels() -> str\n"
+    "\n"
     "Return a string of all channels (and keys, if any have them) in server,\n"
     "like '#a,#b,#c,#d x,b_chan_key,x,x' or just '#e,#f,#g'\n"
 );
@@ -67,6 +69,8 @@ static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args)
 }
 
 PyDoc_STRVAR(send_raw_doc,
+    "send_raw(cmd) -> None\n"
+    "\n"
     "Send raw message to server, it will be flood protected so you\n"
     "don't need to worry about it.\n"
 );
@@ -86,6 +90,8 @@ static PyObject *PyIrcServer_send_raw(PyIrcServer *self, PyObject *args, PyObjec
 }
 
 PyDoc_STRVAR(send_raw_now_doc,
+    "send_raw_now(cmd) -> None\n"
+    "\n"
     "Send raw message to server immediately without flood protection.\n"
 );
 static PyObject *PyIrcServer_send_raw_now(PyIrcServer *self, PyObject *args, PyObject *kwds)
@@ -104,6 +110,8 @@ static PyObject *PyIrcServer_send_raw_now(PyIrcServer *self, PyObject *args, PyO
 }
 
 PyDoc_STRVAR(send_raw_split_doc,
+    "send_raw_split(cmd, nickarg, max_nicks) -> None\n"
+    "\n"
     "Split the `cmd' into several commands so `nickarg' argument has only\n"
     "`max_nicks' number of nicks.\n"
     "\n"
@@ -131,6 +139,8 @@ static PyObject *PyIrcServer_send_raw_split(PyIrcServer *self, PyObject *args, P
 }
 
 PyDoc_STRVAR(ctcp_send_reply_doc,
+    "ctcp_send_reply(data) -> None\n"
+    "\n"
     "Send CTCP reply. This will be 'CTCP flood protected' so if there's too\n"
     "many CTCP requests in buffer, this reply might not get sent. The data\n"
     "is the full raw command to be sent to server, like\n"
@@ -152,6 +162,8 @@ static PyObject *PyIrcServer_ctcp_send_reply(PyIrcServer *self, PyObject *args, 
 }
 
 PyDoc_STRVAR(isupport_doc,
+    "isupport(name) -> str or None\n"
+    "\n"
     "Returns the value of the named item in the ISUPPORT (005) numeric to the\n"
     "script. If the item is not present returns undef, if the item has no value\n"
     "then '' is returned use defined server.isupport('name') if you need to\n"
@@ -176,6 +188,8 @@ static PyObject *PyIrcServer_isupport(PyIrcServer *self, PyObject *args, PyObjec
 }
 
 PyDoc_STRVAR(PyIrcServer_netsplit_find_doc,
+    "netsplit_find(nick, address) -> Netsplit object or None\n"
+    "\n"
     "Check if nick!address is on the other side of netsplit. Netsplit records\n"
     "are automatically removed after 30 minutes (current default)..\n"
 );
@@ -200,7 +214,9 @@ static PyObject *PyIrcServer_netsplit_find(PyIrcServer *self, PyObject *args, Py
 }
 
 PyDoc_STRVAR(PyIrcServer_netsplit_find_channel_doc,
-    "Find nick record for nick!address in channel `channel'."
+    "netsplit_find_channel(nick, address, channel) -> NetsplitChannel object or None\n"
+    "\n"
+    "Find nick record for nick!address in channel `channel'.\n"
 );
 static PyObject *PyIrcServer_netsplit_find_channel(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
@@ -224,7 +240,9 @@ static PyObject *PyIrcServer_netsplit_find_channel(PyIrcServer *self, PyObject *
 }
 
 PyDoc_STRVAR(PyIrcServer_notifylist_ison_doc,
-    "Check if nick is on server"
+    "notifylist_ison(nick) -> bool\n"
+    "\n"
+    "Check if nick is on server\n"
 );
 static PyObject *PyIrcServer_notifylist_ison(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
@@ -238,6 +256,147 @@ static PyObject *PyIrcServer_notifylist_ison(PyIrcServer *self, PyObject *args, 
         return NULL;
 
     return PyBool_FromLong(notifylist_ison_server(self->data, nick));
+}
+
+/* expect a list of tuples [('str', 'str'), ...] */
+static GSList *py_event_conv(PyObject *list)
+{
+    int i;
+    GSList *ret = NULL;
+
+    if (!PyList_Check(list))
+    {
+        PyErr_Format(PyExc_TypeError, "expect a list of tuples of two strings");  
+        return NULL;
+    }
+
+    for (i = 0; i < PyList_Size(list); i++)
+    {
+        char *key;
+        char *val;
+        PyObject *tup = PyList_GET_ITEM(list, i);
+
+        if (!PyTuple_Check(tup) || !PyArg_ParseTuple(tup, "ss", &key, &val))
+        {
+            GSList *node;
+
+            for (node = ret; node; node = node->next)
+                g_free(node->data);
+
+            if (!PyErr_Occurred() || PyErr_ExceptionMatches(PyExc_TypeError))
+            {
+                PyErr_Clear();
+                PyErr_SetString(PyExc_TypeError, "expect a list of tuples of two strings");
+            }
+
+            return NULL;
+        }
+
+        ret = g_slist_append(ret, g_strdup(key));
+        ret = g_slist_append(ret, g_strdup(val));
+    }
+
+    return ret;
+}
+
+PyDoc_STRVAR(PyIrcServer_redirect_event_doc,
+    "redirect_event(command, signals, arg=None, count=1, remote=-1, failure_signal=None) -> None\n"
+    "\n"
+    "Specify that the next command sent to server will be redirected.\n"
+    "NOTE: This command MUST be called before sending the command to server.\n"
+    "\n"
+    "`command' - Name of the registered redirection that we're using.\n"
+    "\n"
+    "`count' - How many times to execute the redirection. Some commands may\n"
+    "send multiple stop events, like MODE #a,#b.\n"
+    "\n"
+    "`arg' - The argument to be compared in event strings. You can give multiple\n"
+    "arguments separated with space.\n"
+    "\n"
+    "`remote' - Specifies if the command is a remote command, -1 = use default.\n"
+    "\n"
+    "`failure_signal' - If irssi can't find the stop signal for the redirection,\n"
+    "this signal is called.\n"
+    "\n"
+    "`signals' - hash reference with \"event\" => \"redir signal\" entries.\n"
+    "If the event is "", all the events belonging to the redirection but not\n"
+    "specified here, will be sent there.\n"
+    "\n"
+    "Example:\n"
+    "\n"
+    "# ignore all events generated by whois query, except 311.\n"
+    "\n"
+    "server.redirect_event(\"whois\",\n"
+    "    remote = 0,\n"
+    "    arg = \"cras\",\n"
+    "    signals = [\n"
+    "        ('event 311', 'redir whois'),\n"
+    "        ('', 'event empty') \n"
+    "    ]\n"
+    ")\n"
+    "server.send_raw(\"WHOIS :cras\")\n"
+);
+static PyObject *PyIrcServer_redirect_event(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"command", "signals", "arg", "count", "remote", "failure_signal", NULL};
+    char *command = "";
+    int count = 1;
+    char *arg = NULL;
+    int remote = -1;
+    char *failure_signal = NULL;
+    PyObject *signals = NULL;
+    GSList *gsignals;
+    
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|ziiz", kwlist, 
+           &command, &signals, &arg, &count, &remote, &failure_signal))
+        return NULL;
+
+    gsignals = py_event_conv(signals);
+    if (!gsignals)
+        return NULL;
+
+    server_redirect_event(self->data, command, count, arg, remote, failure_signal, gsignals); 
+    
+    Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(PyIrcServer_redirect_get_signal_doc,
+    "redirect_get_signal(event, args) -> str\n"
+);
+static PyObject *PyIrcServer_redirect_get_signal(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"event", "args", NULL};
+    char *event = "";
+    char *pargs = "";
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &event, &pargs))
+        return NULL;
+
+    RET_AS_STRING_OR_NONE(server_redirect_get_signal(self->data, event, pargs));
+}
+
+PyDoc_STRVAR(PyIrcServer_redirect_peek_signal_doc,
+    "redirect_peek_signal(event, args) -> str\n"
+);
+static PyObject *PyIrcServer_redirect_peek_signal(PyIrcServer *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"event", "args", NULL};
+    char *event = "";
+    char *pargs = "";
+    int redirection;
+
+    RET_NULL_IF_INVALID(self->data);
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
+           &event, &pargs))
+        return NULL;
+
+    RET_AS_STRING_OR_NONE(server_redirect_peek_signal(self->data, event, pargs, &redirection));
 }
 
 /* Methods for object */
@@ -260,6 +419,12 @@ static PyMethodDef PyIrcServer_methods[] = {
         PyIrcServer_netsplit_find_channel_doc},
     {"notifylist_ison", (PyCFunction)PyIrcServer_notifylist_ison, METH_VARARGS | METH_KEYWORDS,
         PyIrcServer_notifylist_ison_doc},
+    {"redirect_event", (PyCFunction)PyIrcServer_redirect_event, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_redirect_event_doc},
+    {"redirect_get_signal", (PyCFunction)PyIrcServer_redirect_get_signal, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_redirect_get_signal_doc},
+    {"redirect_peek_signal", (PyCFunction)PyIrcServer_redirect_peek_signal, METH_VARARGS | METH_KEYWORDS,
+        PyIrcServer_redirect_peek_signal_doc},
     {NULL}  /* Sentinel */
 };
 
