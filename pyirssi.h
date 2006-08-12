@@ -3,6 +3,7 @@
 
 #define MODULE_NAME "irssi_python"
 #include "config.h"
+#include "core.h"
 #include "common.h"
 #include "modules.h"
 #include "commands.h"

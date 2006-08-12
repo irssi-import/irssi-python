@@ -9,6 +9,7 @@
 #include "pysignals.h"
 #include "pythemes.h"
 #include "pystatusbar.h"
+#include "pyconstants.h"
 #include "factory.h"
 
 /*XXX: copy parse into utils */
@@ -126,6 +127,7 @@ void irssi_python_init(void)
         printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Failed to load Python");
         return;
     }
+    pyconstants_init();
 
     /*PyImport_ImportModule("irssi_startup");*/
     /* Install the custom output handlers, import hook and reload function */

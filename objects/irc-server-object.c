@@ -282,7 +282,9 @@ static GSList *py_event_conv(PyObject *list)
 
             for (node = ret; node; node = node->next)
                 g_free(node->data);
-
+            
+            g_slist_free(ret);
+            
             if (!PyErr_Occurred() || PyErr_ExceptionMatches(PyExc_TypeError))
             {
                 PyErr_Clear();

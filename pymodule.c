@@ -825,7 +825,7 @@ static PyObject *py_notifylist_remove(PyObject *self, PyObject *args, PyObject *
 }
 
 PyDoc_STRVAR(py_notifylist_ison_doc,
-    "notifylist_ison(nick, serverlist="") -> IrcServer object\n"
+    "notifylist_ison(nick, serverlist=\"\") -> IrcServer object\n"
     "\n"
     "Check if nick is in IRC. serverlist is a space separated list of server tags.\n"
     "If it's empty string, all servers will be checked\n"
@@ -1666,6 +1666,10 @@ error:
     for (node = gopt; node; node = node->next->next)
         g_free(node->data);
 
+    g_slist_free(gstart);
+    g_slist_free(gstop);
+    g_slist_free(gopt);
+    
     return NULL;
 
 }

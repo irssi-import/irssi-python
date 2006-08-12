@@ -173,7 +173,7 @@ PyObject *pymain_window_new(MAIN_WINDOW_REC *mw)
     pymw = py_inst(PyMainWindow, PyMainWindowType);
     if (!pymw)
     {
-        Py_XDECREF(pyactive);
+        Py_DECREF(pyactive);
         return NULL;
     }
 

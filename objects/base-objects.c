@@ -4,25 +4,17 @@
 #include "base-objects.h"
 #include "pyirssi.h"
 
-/* This is the base type for most, if not all, Irssi objects with a type
-   id. The user can find the type name, type id, and check if the object is
-   wrapping a valid Irssi record. */
-
-/* member IDs */
-enum
-{
-    M_BASE_TYPE,
-    M_BASE_NAME,
-    M_BASE_VALID,
-};
+/* This is the base type for Irssi objects with a type id. The user can find 
+ * the type name, type id, and check if the object is wrapping a valid Irssi 
+ * record. 
+ */
 
 static void PyIrssiBase_dealloc(PyIrssiBase *self)
 {
     self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *
-PyIrssiBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+static PyObject *PyIrssiBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyIrssiBase *self;
 
@@ -33,50 +25,50 @@ PyIrssiBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)self;
 }
 
-static PyObject *PyIrssiBase_get(PyIrssiBase *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyIrssiBase_type_id_doc,
+    "Irssi's type id for object"
+);
+static PyObject *PyIrssiBase_type_id_get(PyIrssiBase *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(self->data->type);
+}
 
-    /* If the user passed the valid member, don't trigger an exception */
-    if (member != M_BASE_VALID)
-        RET_NULL_IF_INVALID(self->data);
+PyDoc_STRVAR(PyIrssiBase_type_doc,
+    "Irssi's name for object"
+);
+static PyObject *PyIrssiBase_type_get(PyIrssiBase *self, void *closure)
+{
+    RET_NULL_IF_INVALID(self->data);
+    RET_AS_STRING_OR_NONE(self->base_name);
+}
 
-    switch (member)
-    {
-        case M_BASE_TYPE:
-            return PyInt_FromLong(self->data->type);
-        case M_BASE_NAME:
-            RET_AS_STRING_OR_NONE(self->base_name);
-        case M_BASE_VALID:
-            if (self->data != NULL)
-                Py_RETURN_TRUE;
-            else
-                Py_RETURN_FALSE;
-    }
+PyDoc_STRVAR(PyIrssiBase_valid_doc,
+    "True if the object is valid"
+);
+static PyObject *PyIrssiBase_valid_get(PyIrssiBase *self, void *closure)
+{
+    if (self->data != NULL)
+        Py_RETURN_TRUE;
 
-    INVALID_MEMBER(member);
+    Py_RETURN_FALSE;
 }
 
 /* specialized getters/setters */
 static PyGetSetDef PyIrssiBase_getseters[] = {
-    {"type_id", (getter)PyIrssiBase_get, NULL, 
-        "Irssi's type id for object", 
-        GINT_TO_POINTER(M_BASE_TYPE)},
-
-    {"type", (getter)PyIrssiBase_get, NULL, 
-        "Irssi's name for object", 
-        GINT_TO_POINTER(M_BASE_NAME)},
-
-    {"valid", (getter)PyIrssiBase_get, NULL, 
-        "True if the object is valid", 
-        GINT_TO_POINTER(M_BASE_VALID)},
+    {"type_id", (getter)PyIrssiBase_type_id_get, NULL,
+        PyIrssiBase_type_id_doc, NULL},
+    {"type", (getter)PyIrssiBase_type_get, NULL,
+        PyIrssiBase_type_doc, NULL},
+    {"valid", (getter)PyIrssiBase_valid_get, NULL,
+        PyIrssiBase_valid_doc, NULL},
     {NULL}
 };
 
 /* Methods for object */
 static PyMethodDef PyIrssiBase_methods[] = {
-    /* {"somemeth", (PyCFunction)PyIrssiBase_name, METH_NOARGS, "docstr"}, */
-    {NULL}  /* Sentinel */
+    {NULL}  
 };
 
 PyTypeObject PyIrssiBaseType = {
@@ -127,21 +119,12 @@ PyTypeObject PyIrssiBaseType = {
    the type id with the chat_type_id member. It inherits from IrssiBase
    so the type, valid, and type_id members are visible to the user, too */
 
-/* member IDs */
-enum
-{
-    M_CHAT_CHAT_TYPE,
-    M_CHAT_CHAT_NAME,
-};
-
-static void
-PyIrssiChatBase_dealloc(PyIrssiChatBase *self)
+static void PyIrssiChatBase_dealloc(PyIrssiChatBase *self)
 {
     self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *
-PyIrssiChatBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+static PyObject *PyIrssiChatBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     PyIrssiChatBase *self;
 
@@ -152,43 +135,44 @@ PyIrssiChatBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)self;
 }
 
-static PyObject *PyIrssiChatBase_get(PyIrssiChatBase *self, void *closure)
+/* Getters */
+PyDoc_STRVAR(PyIrssiChatBase_chat_type_id_doc,
+    "Chat Type id (int)"
+);
+static PyObject *PyIrssiChatBase_chat_type_id_get(PyIrssiChatBase *self, void *closure)
 {
-    int member = GPOINTER_TO_INT(closure);
+    RET_NULL_IF_INVALID(self->data);
+    return PyInt_FromLong(self->data->chat_type);
+}
+
+PyDoc_STRVAR(PyIrssiChatBase_chat_type_doc,
+    "Chat name (str)"
+);
+static PyObject *PyIrssiChatBase_chat_type_get(PyIrssiChatBase *self, void *closure)
+{
+    CHAT_PROTOCOL_REC *rec;
 
     RET_NULL_IF_INVALID(self->data);
 
-    switch (member)
-    {
-        case M_CHAT_CHAT_TYPE:
-            return PyInt_FromLong(self->data->chat_type);
-        case M_CHAT_CHAT_NAME:
-        {
-            CHAT_PROTOCOL_REC *rec = chat_protocol_find_id(self->data->chat_type);
-            if (rec)
-                RET_AS_STRING_OR_NONE(rec->name);
-            else
-                Py_RETURN_NONE;
-        }
-    }
-
-    INVALID_MEMBER(member);
+    rec = chat_protocol_find_id(self->data->chat_type);
+    if (rec)
+        RET_AS_STRING_OR_NONE(rec->name);
+    else
+        Py_RETURN_NONE;
 }
 
-//specialized getters/setters
+/* specialized getters/setters */
 static PyGetSetDef PyIrssiChatBase_getseters[] = {
-    {"chat_type_id", (getter)PyIrssiChatBase_get, NULL, 
-        "Chat Type id", 
-        GINT_TO_POINTER(M_CHAT_CHAT_TYPE)},
-
-    {"chat_type", (getter)PyIrssiChatBase_get, NULL, 
-        "Chat Name", 
-        GINT_TO_POINTER(M_CHAT_CHAT_NAME)},
+    {"chat_type_id", (getter)PyIrssiChatBase_chat_type_id_get, NULL,
+        PyIrssiChatBase_chat_type_id_doc, NULL},
+    {"chat_type", (getter)PyIrssiChatBase_chat_type_get, NULL,
+        PyIrssiChatBase_chat_type_doc, NULL},
     {NULL}
 };
 
+/* Methods */
 static PyMethodDef PyIrssiChatBase_methods[] = {
-    {NULL}  /* Sentinel */
+    {NULL}  
 };
 
 PyTypeObject PyIrssiChatBaseType = {

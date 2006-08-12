@@ -1,5 +1,9 @@
 BEGIN {
-    print "static PY_CONSTANT_REC py_constants[] = {";
+    print "#include \"pymodule.h\"";
+    print "#include \"pyirssi_irc.h\"";
+    print
+    print "void pyconstants_init(void)"
+    print "{"
 }
 
 {
@@ -8,11 +12,9 @@ BEGIN {
     else
         constant = $1;
 
-    printf("    {\"%s\", %25s},\n", $1, constant);
+    printf("    PyModule_AddIntConstant(py_module, \"%s\", %s);\n", $1, constant);
 }
 
 END {
-    print "    {NULL}";
-    print "};"
+    print "}"
 }
-

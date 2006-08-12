@@ -15,5 +15,6 @@
 #include "dcc-chat.h"
 #include "netsplit.h"
 #include "notifylist.h"
+#include "irc-masks.h"
 
 #endif
