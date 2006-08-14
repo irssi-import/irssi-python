@@ -29,10 +29,10 @@ def cmd_wintest(data, server, witem):
 
 def cmd_opentest(data, server, witem):
     global win0, win1
-    win0 = irssi.window_create(True)
-    print 'window_create(True) ->', win0
-    win1 = irssi.window_create(False)
-    print 'window_create(False) ->', win1
+    win0 = irssi.window_create(automatic=True)
+    print 'window_create(automatic=True) ->', win0
+    win1 = irssi.window_create(automatic=False)
+    print 'window_create(automatic=False) ->', win1
 
 def cmd_closetest(data, server, witem):
     print 'destroy win0 && win1'

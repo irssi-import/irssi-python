@@ -321,11 +321,14 @@ int pyloader_init(void)
         return 0;
     
     /* XXX: load autorun scripts here */
-    /* Add script location to the load path (add more paths later) */
+    /* Add script location to the load path */
     pyhome = g_strdup_printf("%s/scripts", get_irssi_dir());
     pyloader_add_script_path(pyhome);
     g_free(pyhome);
-
+   
+    /* typically /usr/local/share/irssi/scripts */
+    pyloader_add_script_path(SCRIPTDIR);
+    
     return 1;
 }
 
