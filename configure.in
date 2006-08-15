@@ -41,6 +41,11 @@ if test -z $irssi_path; then
     AC_MSG_ERROR([Path to Irssi distribution not specified. See --with-irssi option.])
 fi
 
+# fix relative paths (from modules/icb)
+old=`pwd`
+irssi_path=`eval cd $irssi_path; pwd`
+cd $old
+
 IRSSI_DIST=$irssi_path
 AC_SUBST([IRSSI_DIST])
 IRSSI_PYTHON_INCLUDES="-I${IRSSI_DIST} -I${IRSSI_DIST}/src -I${IRSSI_DIST}/src/fe-common/core \
