@@ -187,7 +187,7 @@ static PyMethodDef PyTextDest_methods[] = {
 PyTypeObject PyTextDestType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "TextDest",            /*tp_name*/
+    "irssi.TextDest",            /*tp_name*/
     sizeof(PyTextDest),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyTextDest_dealloc, /*tp_dealloc*/

@@ -614,7 +614,7 @@ static PyMemberDef PyScript_members[] = {
 PyTypeObject PyScriptType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Script",               /*tp_name*/
+    "irssi.Script",               /*tp_name*/
     sizeof(PyScript),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyScript_dealloc, /*tp_dealloc*/

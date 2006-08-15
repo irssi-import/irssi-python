@@ -151,7 +151,7 @@ static PyMethodDef PyNotifylist_methods[] = {
 PyTypeObject PyNotifylistType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Notifylist",            /*tp_name*/
+    "irssi.Notifylist",            /*tp_name*/
     sizeof(PyNotifylist),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyNotifylist_dealloc, /*tp_dealloc*/

@@ -28,7 +28,7 @@ static PyGetSetDef PyIrcConnect_getseters[] = {
 PyTypeObject PyIrcConnectType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "IrcConnect",            /*tp_name*/
+    "irssi.IrcConnect",            /*tp_name*/
     sizeof(PyIrcConnect),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                          /*tp_dealloc*/

@@ -126,7 +126,7 @@ static PyMethodDef PyTheme_methods[] = {
 PyTypeObject PyThemeType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Theme",            /*tp_name*/
+    "irssi.Theme",            /*tp_name*/
     sizeof(PyTheme),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyTheme_dealloc, /*tp_dealloc*/

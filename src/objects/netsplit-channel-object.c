@@ -90,7 +90,7 @@ static PyMethodDef PyNetsplitChannel_methods[] = {
 PyTypeObject PyNetsplitChannelType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "NetsplitChannel",            /*tp_name*/
+    "irssi.NetsplitChannel",            /*tp_name*/
     sizeof(PyNetsplitChannel),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyNetsplitChannel_dealloc, /*tp_dealloc*/

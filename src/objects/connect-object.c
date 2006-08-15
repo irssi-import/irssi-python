@@ -114,7 +114,7 @@ static PyGetSetDef PyConnect_getseters[] = {
 PyTypeObject PyConnectType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Connect",            /*tp_name*/
+    "irssi.Connect",            /*tp_name*/
     sizeof(PyConnect),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyConnect_dealloc, /*tp_dealloc*/

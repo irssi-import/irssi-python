@@ -70,7 +70,7 @@ static PyMethodDef PyLogitem_methods[] = {
 PyTypeObject PyLogitemType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Logitem",            /*tp_name*/
+    "irssi.Logitem",            /*tp_name*/
     sizeof(PyLogitem),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyLogitem_dealloc, /*tp_dealloc*/

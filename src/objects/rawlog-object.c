@@ -255,7 +255,7 @@ static PyMethodDef PyRawlog_methods[] = {
 PyTypeObject PyRawlogType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Rawlog",            /*tp_name*/
+    "irssi.Rawlog",            /*tp_name*/
     sizeof(PyRawlog),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyRawlog_dealloc, /*tp_dealloc*/

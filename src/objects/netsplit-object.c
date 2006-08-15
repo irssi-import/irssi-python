@@ -112,7 +112,7 @@ static PyMethodDef PyNetsplit_methods[] = {
 PyTypeObject PyNetsplitType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Netsplit",            /*tp_name*/
+    "irssi.Netsplit",            /*tp_name*/
     sizeof(PyNetsplit),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyNetsplit_dealloc, /*tp_dealloc*/

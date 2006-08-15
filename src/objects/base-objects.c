@@ -74,7 +74,7 @@ static PyMethodDef PyIrssiBase_methods[] = {
 PyTypeObject PyIrssiBaseType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "IrssiBase",            /*tp_name*/
+    "irssi.IrssiBase",            /*tp_name*/
     sizeof(PyIrssiBase),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyIrssiBase_dealloc, /*tp_dealloc*/
@@ -178,7 +178,7 @@ static PyMethodDef PyIrssiChatBase_methods[] = {
 PyTypeObject PyIrssiChatBaseType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "IrssiChatBase",            /*tp_name*/
+    "irssi.IrssiChatBase",            /*tp_name*/
     sizeof(PyIrssiChatBase),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyIrssiChatBase_dealloc, /*tp_dealloc*/

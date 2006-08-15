@@ -105,7 +105,7 @@ static PyMethodDef PyChatnet_methods[] = {
 PyTypeObject PyChatnetType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Chatnet",            /*tp_name*/
+    "irssi.Chatnet",            /*tp_name*/
     sizeof(PyChatnet),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyChatnet_dealloc, /*tp_dealloc*/

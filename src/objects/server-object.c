@@ -708,7 +708,7 @@ static PyMethodDef PyServer_methods[] = {
 PyTypeObject PyServerType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Server",            /*tp_name*/
+    "irssi.Server",            /*tp_name*/
     sizeof(PyServer),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyServer_dealloc, /*tp_dealloc*/

@@ -152,7 +152,7 @@ static PyMethodDef PyProcess_methods[] = {
 PyTypeObject PyProcessType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Process",            /*tp_name*/
+    "irssi.Process",            /*tp_name*/
     sizeof(PyProcess),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyProcess_dealloc, /*tp_dealloc*/

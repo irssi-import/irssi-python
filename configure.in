@@ -58,5 +58,5 @@ fi
 #AC_CONFIG_FILES([src/Makefile src/objects/Makefile])
 #AC_OUTPUT([Makefile src/Makefile src/objects/Makefile])
 #AC_OUTPUT([Makefile src/Makefile src/objects/Makefile])
-AC_CONFIG_FILES([Makefile scripts/Makefile src/Makefile src/objects/Makefile])
+AC_CONFIG_FILES([Makefile scripts/Makefile docs/Makefile src/Makefile src/objects/Makefile])
 AC_OUTPUT

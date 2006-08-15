@@ -171,7 +171,7 @@ static PyMethodDef PyStatusbarItem_methods[] = {
 PyTypeObject PyStatusbarItemType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "StatusbarItem",            /*tp_name*/
+    "irssi.StatusbarItem",            /*tp_name*/
     sizeof(PyStatusbarItem),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyStatusbarItem_dealloc, /*tp_dealloc*/

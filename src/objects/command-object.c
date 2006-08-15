@@ -75,7 +75,7 @@ static PyMethodDef PyCommand_methods[] = {
 PyTypeObject PyCommandType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Command",            /*tp_name*/
+    "irssi.Command",            /*tp_name*/
     sizeof(PyCommand),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyCommand_dealloc, /*tp_dealloc*/

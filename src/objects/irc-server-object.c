@@ -433,7 +433,7 @@ static PyMethodDef PyIrcServer_methods[] = {
 PyTypeObject PyIrcServerType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "IrcServer",            /*tp_name*/
+    "irssi.IrcServer",            /*tp_name*/
     sizeof(PyIrcServer),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                         /*tp_dealloc*/

@@ -303,7 +303,7 @@ static PyMethodDef PyChannel_methods[] = {
 PyTypeObject PyChannelType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Channel",            /*tp_name*/
+    "irssi.Channel",            /*tp_name*/
     sizeof(PyChannel),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyChannel_dealloc, /*tp_dealloc*/

@@ -85,7 +85,7 @@ static PyMethodDef PyBan_methods[] = {
 PyTypeObject PyBanType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Ban",            /*tp_name*/
+    "irssi.Ban",            /*tp_name*/
     sizeof(PyBan),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyBan_dealloc, /*tp_dealloc*/

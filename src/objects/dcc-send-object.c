@@ -79,7 +79,7 @@ static PyMethodDef PyDccSend_methods[] = {
 PyTypeObject PyDccSendType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "DccSend",            /*tp_name*/
+    "irssi.DccSend",            /*tp_name*/
     sizeof(PyDccSend),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                  /*tp_dealloc*/

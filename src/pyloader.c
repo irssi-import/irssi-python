@@ -232,8 +232,11 @@ PyObject *pyloader_find_script_obj(void)
 
     for (frame = PyEval_GetFrame(); frame != NULL; frame = frame->f_back)
     {
+        PyObject *script;
+
         g_return_val_if_fail(frame->f_globals != NULL, NULL);
-        PyObject *script = PyDict_GetItemString(frame->f_globals, "_script");
+        script = PyDict_GetItemString(frame->f_globals, "_script");
+
         if (script && pyscript_check(script))
         {
             /*

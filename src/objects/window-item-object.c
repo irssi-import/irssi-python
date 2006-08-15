@@ -251,7 +251,7 @@ static PyMethodDef PyWindowItem_methods[] = {
 PyTypeObject PyWindowItemType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "WindowItem",            /*tp_name*/
+    "irssi.WindowItem",            /*tp_name*/
     sizeof(PyWindowItem),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                      /*tp_dealloc*/

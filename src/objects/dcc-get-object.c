@@ -79,7 +79,7 @@ static PyMethodDef PyDccGet_methods[] = {
 PyTypeObject PyDccGetType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "DccGet",            /*tp_name*/
+    "irssi.DccGet",            /*tp_name*/
     sizeof(PyDccGet),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                  /*tp_dealloc*/

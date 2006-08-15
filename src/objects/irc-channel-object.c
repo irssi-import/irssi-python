@@ -112,7 +112,7 @@ static PyMethodDef PyIrcChannel_methods[] = {
 PyTypeObject PyIrcChannelType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "IrcChannel",            /*tp_name*/
+    "irssi.IrcChannel",            /*tp_name*/
     sizeof(PyIrcChannel),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                          /*tp_dealloc*/

@@ -101,7 +101,7 @@ static PyMethodDef PyQuery_methods[] = {
 PyTypeObject PyQueryType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Query",            /*tp_name*/
+    "irssi.Query",            /*tp_name*/
     sizeof(PyQuery),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyQuery_dealloc,    /*tp_dealloc*/

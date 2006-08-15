@@ -160,7 +160,7 @@ static PyMethodDef PyNick_methods[] = {
 PyTypeObject PyNickType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Nick",            /*tp_name*/
+    "irssi.Nick",            /*tp_name*/
     sizeof(PyNick),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyNick_dealloc, /*tp_dealloc*/

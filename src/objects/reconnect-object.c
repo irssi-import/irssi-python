@@ -75,7 +75,7 @@ static PyMethodDef PyReconnect_methods[] = {
 PyTypeObject PyReconnectType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Reconnect",            /*tp_name*/
+    "irssi.Reconnect",            /*tp_name*/
     sizeof(PyReconnect),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyReconnect_dealloc, /*tp_dealloc*/

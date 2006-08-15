@@ -214,7 +214,7 @@ static PyMethodDef PyIgnore_methods[] = {
 PyTypeObject PyIgnoreType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Ignore",            /*tp_name*/
+    "irssi.Ignore",            /*tp_name*/
     sizeof(PyIgnore),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyIgnore_dealloc, /*tp_dealloc*/

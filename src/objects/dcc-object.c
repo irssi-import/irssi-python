@@ -250,7 +250,7 @@ static PyMethodDef PyDcc_methods[] = {
 PyTypeObject PyDccType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Dcc",            /*tp_name*/
+    "irssi.Dcc",            /*tp_name*/
     sizeof(PyDcc),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyDcc_dealloc, /*tp_dealloc*/

@@ -1,62 +1,21 @@
-Pytest for Irssi
+irssi-python test1
 
-This module embeds Python into an Irssi module. It provides just enough of an 
-interface to port the hello.pl example from the Perl docs to Python. There are
-still a lot of things needed to be done, and some design issues to work out.
-See the scripts/ directory for two small example scripts.
+irssi-python embeds Python into an Irssi module, providing most of the
+functionality of the Perl wrapper to Python scripts using a similar interface.
+Read INSTALL for setup instructions.
 
-To compile:
-    So far I've compiled it on Debian i386 and on FreeBSD i386. Haven't tried
-    elsewhere. The Makefile will need to be edited for it to be compiled. It
-    requires Python 2.4 installed. Put libpytest.so wherever Irssi recognizes
-    modules.
+Currently, all of the objects and functions are accessible through the irssi
+module. See docs/irssi-python.html for a listing. Basic docs are also available
+online in Irssi, as well. Use the /pyexec command to send commands to the Python
+interpreter while in Irssi. 
 
-In pytest so far:
-    -Looks for scripts in ~/.irssi/pyscripts
-    -Created base object wrappers for structs with type and chat_type members.
-    -Wrapped members of most of the core structs: 
-        SERVER_REC 
-        WI_ITEM_REC
-        CHANNEL_REC
-        QUERY_REC
-    -Wrapped print methods for the global module, server, and window item.
-    -Wrapped command methods for server and window item.
-    -Included a signal handler in the base server and window item types that
-     seems to prevent crashes when an object is accessed after a server is
-     disconnected or a window item is removed (channel close, etc).  
-    -Python stdout and stderr are redirected to the Irssi status window.
-    -The command_bind method of the Script object binds commands.
+This will print help for the Window object:
+    /pyexec import irssi
+    /pyexec help(irssi.Window)
 
-TODO:
-    -Wrap the rest of the *_REC structs.
-    -Wrap the important methods and functions.
-    -Signal handling
-    -Wrapper object factory
-    -Handle settings
-    -Handle timeouts
-    -Bunch of other stuff
-
-Design issues:
-   -Threading. Pytest doesn't consider thread usage by scripts at all. Any
-    thread usage would likely cause a crash, as pytest makes no attempt to
-    manipulate Python's interpreter lock or thread state. It would be easy to
-    use PyGILState_* critical sections around important parts where Irssi 
-    calls into Python, but I don't know about the larger impact on Irssi for
-    allowing threads to run. With the signal system and timeouts, is this
-    really an important issue?
-
-   -Structure. C modules could use some adjustment, especially as more code
-    is added. I also noticed how the Perl wrapper, like the rest of Irssi, 
-    seems to be organized around interface type. The Python wrapper may need 
-    some adjustment for this(?)
-
-   -Also, command_bind currently isn't a function in the main namespace like in
-    the Perl wrapper. Instead, its a method of the Script object, which includes
-    a list of bound signals for record keeping. That way, the context is always 
-    certain. Currently, the Script object is inserted into the user's script 
-    through a startup hook function (irssi_main). There could be a better way 
-    of doing this (perhaps by inserting the script object directly into the 
-    script's globals and using an import hook to distribute it to modules the 
-    script imports).
-  
+Other commands (XXX: change these to /py <cmd>):
+    /pyload     load a Python script
+    /pyunload   unload a Python script
+    /pylist     list loaded scripts
+    
 

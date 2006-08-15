@@ -1,4 +1,4 @@
-SUBDIRS = src scripts
+SUBDIRS = src scripts docs
 
 variables:
 	echo @PYTHON_CPPFLAGS@

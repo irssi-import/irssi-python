@@ -407,7 +407,7 @@ static PyMethodDef PyLog_methods[] = {
 PyTypeObject PyLogType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "Log",            /*tp_name*/
+    "irssi.Log",            /*tp_name*/
     sizeof(PyLog),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)PyLog_dealloc, /*tp_dealloc*/

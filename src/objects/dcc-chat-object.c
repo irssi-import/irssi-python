@@ -78,7 +78,7 @@ static PyMethodDef PyDccChat_methods[] = {
 PyTypeObject PyDccChatType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "DccChat",            /*tp_name*/
+    "irssi.DccChat",            /*tp_name*/
     sizeof(PyDccChat),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                  /*tp_dealloc*/
