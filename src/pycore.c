@@ -32,7 +32,14 @@
 #include "pyconstants.h"
 #include "factory.h"
 
-/*XXX: copy parse into utils */
+static void cmd_default(const char *data, SERVER_REC *server, void *item)
+{
+    if (!*data)
+        data = "list";
+
+    command_runsub("py", data, server, item);
+}
+
 static void cmd_exec(const char *data)
 {
     PyObject *co;
@@ -136,7 +143,7 @@ static void intr_catch(int sig)
 }
 #endif 
 
-void irssi_python_init(void)
+void python_init(void)
 {
     Py_InitializeEx(0);
 
@@ -156,21 +163,23 @@ void irssi_python_init(void)
             "import irssi_startup\n"
     );
 
-    //assert(signal(SIGINT, intr_catch) != SIG_ERR); 
+    /* assert(signal(SIGINT, intr_catch) != SIG_ERR); */
     
-    command_bind("pyload", NULL, (SIGNAL_FUNC) cmd_load);
-    command_bind("pyunload", NULL, (SIGNAL_FUNC) cmd_unload);
-    command_bind("pylist", NULL, (SIGNAL_FUNC) cmd_list);
-    command_bind("pyexec", NULL, (SIGNAL_FUNC) cmd_exec);
+    command_bind("py", NULL, (SIGNAL_FUNC) cmd_default);
+    command_bind("py load", NULL, (SIGNAL_FUNC) cmd_load);
+    command_bind("py unload", NULL, (SIGNAL_FUNC) cmd_unload);
+    command_bind("py list", NULL, (SIGNAL_FUNC) cmd_list);
+    command_bind("py exec", NULL, (SIGNAL_FUNC) cmd_exec);
     module_register(MODULE_NAME, "core");
 }
 
-void irssi_python_deinit(void)
+void python_deinit(void)
 {
-    command_unbind("pyload", (SIGNAL_FUNC) cmd_load);
-    command_unbind("pyunload", (SIGNAL_FUNC) cmd_unload);
-    command_unbind("pylist", (SIGNAL_FUNC) cmd_list);
-    command_unbind("pyexec", (SIGNAL_FUNC) cmd_exec);
+    command_unbind("py", (SIGNAL_FUNC) cmd_default);
+    command_unbind("py load", (SIGNAL_FUNC) cmd_load);
+    command_unbind("py unload", (SIGNAL_FUNC) cmd_unload);
+    command_unbind("py list", (SIGNAL_FUNC) cmd_list);
+    command_unbind("py exec", (SIGNAL_FUNC) cmd_exec);
 
     pymodule_deinit();
     pyloader_deinit();

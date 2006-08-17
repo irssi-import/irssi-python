@@ -1,6 +1,3 @@
--- Change commands from py<cmd> to py <cmd> (add space), and add help
-   documentation.
-
 -- Fix loader to handle module hierarchies better.
 
 -- Add more example scripts.

@@ -1,16 +1,16 @@
 moduledir = $(libdir)/irssi/modules
 wrappersdir = $(datadir)/irssi/scripts
-module_LTLIBRARIES = libirssi_python.la
+module_LTLIBRARIES = libpython.la
 
-libirssi_python_la_DEPENDENCIES = objects/libobjects.la
-libirssi_python_la_LIBADD = $(PYTHON_LDFLAGS) objects/libobjects.la
-libirssi_python_la_LDFLAGS = -avoid-version
+libpython_la_DEPENDENCIES = objects/libobjects.la
+libpython_la_LIBADD = $(PYTHON_LDFLAGS) objects/libobjects.la
+libpython_la_LDFLAGS = -avoid-version
 
 INCLUDES = $(IRSSI_PYTHON_INCLUDES) \
 		   -I$(top_srcdir)/src/objects \
 		   -DSCRIPTDIR=\""$(datadir)/irssi/scripts"\"
 
-libirssi_python_la_SOURCES = \
+libpython_la_SOURCES = \
 	pycore.c \
 	pyutils.c \
 	pymodule.c \
