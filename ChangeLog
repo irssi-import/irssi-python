@@ -7,3 +7,8 @@ loafier, 2006-08-16:
 	changed intstallation location of docs (irssi/docs/irssi-python.html -> doc/irssi/irssi-python.html)	
 	added online help document ( -> irssi/help/py)
 	changed name of shared library from libirssi_python.so to libpython.so
+
+loafier, 2006-08-17:
+	added a few simple scripts
+	added settings_add_* wrappers to irssi.py
+
