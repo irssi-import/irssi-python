@@ -12,3 +12,6 @@ loafier, 2006-08-17:
 	added a few simple scripts
 	added settings_add_* wrappers to irssi.py
 
+loafier, 2006-08-20:
+	added autoload
+	changed behavior of load to reload previously loaded scripts

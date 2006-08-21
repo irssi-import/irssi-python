@@ -163,6 +163,8 @@ void python_init(void)
             "import irssi_startup\n"
     );
 
+    pyloader_auto_load();
+    
     /* assert(signal(SIGINT, intr_catch) != SIG_ERR); */
     
     command_bind("py", NULL, (SIGNAL_FUNC) cmd_default);

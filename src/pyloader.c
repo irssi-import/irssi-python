@@ -113,23 +113,10 @@ static char *py_find_script(const char *name)
  * (such as from g_strsplit) of the command line.
  * The array needs at least one item
  */
-int pyloader_load_script_argv(char **argv)
+static int py_load_script_path_argv(const char *path, char **argv)
 {
     PyObject *module = NULL, *script = NULL;
-    char *name = NULL, *path = NULL;
-
-    if (py_get_script(argv[0], NULL) != NULL)
-    {
-        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "script %s already loaded", argv[0]); 
-        return 0;
-    }
-   
-    path = py_find_script(argv[0]);
-    if (!path)
-    {
-        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "script %s does not exist", argv[0]); 
-        return 0;
-    }
+    char *name = NULL; 
 
     name = file_get_filename(path);
     module = PyModule_New(name);
@@ -158,15 +145,14 @@ int pyloader_load_script_argv(char **argv)
     /* PySys_WriteStdout("load %s, script -> 0x%x\n", argv[0], script); */
 
     Py_DECREF(script);
-    g_free(path);
 
     return 1;
 
 error:
     if (PyErr_Occurred())
         PyErr_Print();
-    else
-        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "error loading script %s", argv[0]); 
+    
+    printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "error loading script %s", argv[0]); 
 
     if (script)
     {
@@ -175,10 +161,46 @@ error:
         pyscript_cleanup(script);
         Py_DECREF(script);
     }
-
-    g_free(path);
     
     return 0;
+}
+
+static int py_load_script_path(const char *path)
+{
+    int ret;
+    char *argv[2];
+
+    argv[0] = file_get_filename(path);
+    argv[1] = NULL;
+
+    if (py_get_script(argv[0], NULL) != NULL)
+        pyloader_unload_script(argv[0]);
+
+    ret = py_load_script_path_argv(path, argv);
+    g_free(argv[0]);
+
+    return ret;
+}
+
+int pyloader_load_script_argv(char **argv)
+{
+    char *path;
+    int ret;
+
+    if (py_get_script(argv[0], NULL) != NULL)
+        pyloader_unload_script(argv[0]);
+   
+    path = py_find_script(argv[0]);
+    if (!path)
+    {
+        printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "script %s does not exist", argv[0]); 
+        return 0;
+    }
+
+    ret = py_load_script_path_argv(path, argv);
+    g_free(path);
+
+    return ret;
 }
 
 int pyloader_load_script(char *name)
@@ -227,7 +249,7 @@ int pyloader_unload_script(const char *name)
         return 0;
     }
 
-    PySys_WriteStdout("unload %s, script -> 0x%x\n", name, script);
+    /* PySys_WriteStdout("unload %s, script -> 0x%x\n", name, script); */
     
     pyscript_cleanup(script);
 
@@ -332,6 +354,36 @@ void pyloader_list_destroy(GSList **list)
     *list = NULL;
 }
 
+void pyloader_auto_load(void)
+{
+    GSList *node;
+    char *autodir;
+    const char *name; 
+    GDir *gd;
+    
+    for (node = script_paths; node; node = node->next)
+    {
+        autodir = g_strdup_printf("%s/autorun", (char *)node->data);
+        gd = g_dir_open(autodir, 0, NULL);
+        g_free(autodir);
+
+        if (!gd)
+            continue;
+
+        while ((name = g_dir_read_name(gd)))
+        {
+            char *path = g_strdup_printf("%s/autorun/%s", (char*)node->data, name);
+
+            if (!strcmp(file_get_ext(name), "py"))
+                py_load_script_path(path);
+
+            g_free(path);
+        }
+        
+        g_dir_close(gd);
+    }
+}
+
 int pyloader_init(void)
 {
     char *pyhome;
@@ -343,7 +395,6 @@ int pyloader_init(void)
     if (!script_modules)
         return 0;
     
-    /* XXX: load autorun scripts here */
     /* Add script location to the load path */
     pyhome = g_strdup_printf("%s/scripts", get_irssi_dir());
     pyloader_add_script_path(pyhome);
@@ -351,7 +402,7 @@ int pyloader_init(void)
    
     /* typically /usr/local/share/irssi/scripts */
     pyloader_add_script_path(SCRIPTDIR);
-    
+   
     return 1;
 }
 

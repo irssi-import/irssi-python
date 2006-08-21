@@ -18,6 +18,7 @@ GSList *pyloader_list(void);
 void pyloader_list_destroy(GSList **list);
 
 int pyloader_init(void);
+void pyloader_auto_load(void);
 void pyloader_deinit(void);
 
 #endif
