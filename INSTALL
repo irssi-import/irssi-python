@@ -30,6 +30,9 @@ installed.
    C library before running irssi. export LD_PRELOAD=/usr/lib/libc_r.so seems to
    work on FreeBSD.
 
-   You may want to load one of the example scripts like hello or fork.
+   You may want to load one of the example scripts like hello or fork:
+
+   /py load fork
+   /forkoff
 
 Also check out README and docs/irssi-python.html

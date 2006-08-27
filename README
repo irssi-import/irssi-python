@@ -1,4 +1,4 @@
-irssi-python test2
+irssi-python test3
 
 irssi-python embeds Python into an Irssi module, providing most of the
 functionality of the Perl wrapper to Python scripts using a similar interface.

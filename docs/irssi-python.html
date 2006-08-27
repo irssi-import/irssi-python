@@ -2278,7 +2278,7 @@ Combine&nbsp;level&nbsp;number&nbsp;to&nbsp;level&nbsp;string&nbsp;('+level&nbsp
  <dl><dt><a name="-command"><strong>command</strong></a>(...)</dt><dd><tt><a href="#-command">command</a>(cmd)&nbsp;-&gt;&nbsp;None<br>
 &nbsp;<br>
 Execute&nbsp;command</tt></dd></dl>
- <dl><dt><a name="-command_bind"><strong>command_bind</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.command_bind</tt></dd></dl>
+ <dl><dt><a name="-command_bind"><strong>command_bind</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-command_bind">command_bind</a>()</tt></dd></dl>
  <dl><dt><a name="-command_runsub"><strong>command_runsub</strong></a>(...)</dt><dd><tt><a href="#-command_runsub">command_runsub</a>(cmd,&nbsp;data,&nbsp;server=None,&nbsp;item=None)&nbsp;-&gt;&nbsp;None<br>
 &nbsp;<br>
 Run&nbsp;subcommands&nbsp;for&nbsp;`cmd'.&nbsp;First&nbsp;word&nbsp;in&nbsp;`data'&nbsp;is&nbsp;parsed&nbsp;as<br>
@@ -2287,7 +2287,7 @@ subcommand.&nbsp;`server'&nbsp;is&nbsp;<a href="#Server">Server</a>&nbsp;<a href
 &nbsp;<br>
 Call&nbsp;command_runsub&nbsp;in&nbsp;handler&nbsp;function&nbsp;for&nbsp;`cmd'&nbsp;and&nbsp;bind<br>
 with&nbsp;<a href="#-command_bind">command_bind</a>("`cmd'&nbsp;`subcmd'",&nbsp;subcmdfunc[,&nbsp;category]);</tt></dd></dl>
- <dl><dt><a name="-command_unbind"><strong>command_unbind</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.command_unbind</tt></dd></dl>
+ <dl><dt><a name="-command_unbind"><strong>command_unbind</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-command_unbind">command_unbind</a>()</tt></dd></dl>
  <dl><dt><a name="-commands"><strong>commands</strong></a>(...)</dt><dd><tt><a href="#-commands">commands</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;<a href="#Command">Command</a>&nbsp;objects<br>
 &nbsp;<br>
 Return&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;commands.</tt></dd></dl>
@@ -2330,7 +2330,7 @@ Return&nbsp;True&nbsp;if&nbsp;ignore&nbsp;matches</tt></dd></dl>
  <dl><dt><a name="-ignores"><strong>ignores</strong></a>(...)</dt><dd><tt><a href="#-ignores">ignores</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;<a href="#Ignore">Ignore</a>&nbsp;objects<br>
 &nbsp;<br>
 Return&nbsp;a&nbsp;list&nbsp;of&nbsp;ignore&nbsp;entries</tt></dd></dl>
- <dl><dt><a name="-io_add_watch"><strong>io_add_watch</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.io_add_watch</tt></dd></dl>
+ <dl><dt><a name="-io_add_watch"><strong>io_add_watch</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-io_add_watch">io_add_watch</a>()</tt></dd></dl>
  <dl><dt><a name="-level2bits"><strong>level2bits</strong></a>(...)</dt><dd><tt><a href="#-level2bits">level2bits</a>(level)&nbsp;-&gt;&nbsp;long<br>
 &nbsp;<br>
 Level&nbsp;string&nbsp;-&gt;&nbsp;number</tt></dd></dl>
@@ -2443,6 +2443,12 @@ Example&nbsp;(already&nbsp;done&nbsp;by&nbsp;irssi):<br>
  <dl><dt><a name="-servers"><strong>servers</strong></a>(...)</dt><dd><tt><a href="#-servers">servers</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;<a href="#Server">Server</a>&nbsp;objects<br>
 &nbsp;<br>
 Return&nbsp;a&nbsp;list&nbsp;of&nbsp;all&nbsp;servers</tt></dd></dl>
+ <dl><dt><a name="-settings_add_bool"><strong>settings_add_bool</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_bool">settings_add_bool</a>()</tt></dd></dl>
+ <dl><dt><a name="-settings_add_int"><strong>settings_add_int</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_int">settings_add_int</a>()</tt></dd></dl>
+ <dl><dt><a name="-settings_add_level"><strong>settings_add_level</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_level">settings_add_level</a>()</tt></dd></dl>
+ <dl><dt><a name="-settings_add_size"><strong>settings_add_size</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_size">settings_add_size</a>()</tt></dd></dl>
+ <dl><dt><a name="-settings_add_str"><strong>settings_add_str</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_str">settings_add_str</a>()</tt></dd></dl>
+ <dl><dt><a name="-settings_add_time"><strong>settings_add_time</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-settings_add_time">settings_add_time</a>()</tt></dd></dl>
  <dl><dt><a name="-settings_get_bool"><strong>settings_get_bool</strong></a>(...)</dt><dd><tt><a href="#-settings_get_bool">settings_get_bool</a>(key)&nbsp;-&gt;&nbsp;bool<br>
 &nbsp;<br>
 Get&nbsp;value&nbsp;for&nbsp;setting.</tt></dd></dl>
@@ -2479,7 +2485,7 @@ Set&nbsp;string&nbsp;value&nbsp;for&nbsp;setting</tt></dd></dl>
  <dl><dt><a name="-settings_set_time"><strong>settings_set_time</strong></a>(...)</dt><dd><tt><a href="#-settings_set_time">settings_set_time</a>(key,&nbsp;value)&nbsp;-&gt;&nbsp;bool<br>
 &nbsp;<br>
 Set&nbsp;string&nbsp;value&nbsp;for&nbsp;setting</tt></dd></dl>
- <dl><dt><a name="-signal_add"><strong>signal_add</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.signal_add</tt></dd></dl>
+ <dl><dt><a name="-signal_add"><strong>signal_add</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-signal_add">signal_add</a>()</tt></dd></dl>
  <dl><dt><a name="-signal_continue"><strong>signal_continue</strong></a>(...)</dt><dd><tt><a href="#-signal_continue">signal_continue</a>(*args)&nbsp;-&gt;&nbsp;None<br>
 &nbsp;<br>
 Continue&nbsp;(reemit?)&nbsp;the&nbsp;current&nbsp;Irssi&nbsp;signal&nbsp;with&nbsp;up&nbsp;to&nbsp;6&nbsp;arguments</tt></dd></dl>
@@ -2492,19 +2498,20 @@ Get&nbsp;name&nbsp;of&nbsp;current&nbsp;signal</tt></dd></dl>
  <dl><dt><a name="-signal_get_emitted_id"><strong>signal_get_emitted_id</strong></a>(...)</dt><dd><tt>signal_get_emmited_id()&nbsp;-&gt;&nbsp;signal&nbsp;id&nbsp;int<br>
 &nbsp;<br>
 Get&nbsp;id&nbsp;of&nbsp;current&nbsp;signal</tt></dd></dl>
- <dl><dt><a name="-signal_remove"><strong>signal_remove</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.signal_remove</tt></dd></dl>
+ <dl><dt><a name="-signal_remove"><strong>signal_remove</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-signal_remove">signal_remove</a>()</tt></dd></dl>
  <dl><dt><a name="-signal_stop"><strong>signal_stop</strong></a>(...)</dt><dd><tt><a href="#-signal_stop">signal_stop</a>()&nbsp;-&gt;&nbsp;None<br>
 &nbsp;<br>
 Stop&nbsp;the&nbsp;signal&nbsp;that's&nbsp;currently&nbsp;being&nbsp;emitted.</tt></dd></dl>
  <dl><dt><a name="-signal_stop_by_name"><strong>signal_stop_by_name</strong></a>(...)</dt><dd><tt><a href="#-signal_stop_by_name">signal_stop_by_name</a>(signal)&nbsp;-&gt;&nbsp;None<br>
 &nbsp;<br>
 Stop&nbsp;the&nbsp;signal,&nbsp;'signal',&nbsp;thats&nbsp;currently&nbsp;being&nbsp;emitted&nbsp;by&nbsp;name</tt></dd></dl>
+ <dl><dt><a name="-statusbar_item_register"><strong>statusbar_item_register</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-statusbar_item_register">statusbar_item_register</a>()</tt></dd></dl>
  <dl><dt><a name="-statusbar_item_unregister"><strong>statusbar_item_unregister</strong></a>(...)</dt><dd><tt><a href="#-statusbar_item_unregister">statusbar_item_unregister</a>(name)&nbsp;-&gt;&nbsp;None</tt></dd></dl>
  <dl><dt><a name="-statusbar_items_redraw"><strong>statusbar_items_redraw</strong></a>(...)</dt><dd><tt><a href="#-statusbar_items_redraw">statusbar_items_redraw</a>(name)&nbsp;-&gt;&nbsp;None</tt></dd></dl>
  <dl><dt><a name="-statusbars_recreate_items"><strong>statusbars_recreate_items</strong></a>(...)</dt><dd><tt><a href="#-statusbars_recreate_items">statusbars_recreate_items</a>()&nbsp;-&gt;&nbsp;None</tt></dd></dl>
  <dl><dt><a name="-strip_codes"><strong>strip_codes</strong></a>(...)</dt><dd><tt><a href="#-strip_codes">strip_codes</a>(input)&nbsp;-&gt;&nbsp;str</tt></dd></dl>
  <dl><dt><a name="-themes_reload"><strong>themes_reload</strong></a>(...)</dt><dd><tt><a href="#-themes_reload">themes_reload</a>()&nbsp;-&gt;&nbsp;None</tt></dd></dl>
- <dl><dt><a name="-timeout_add"><strong>timeout_add</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.timeout_add</tt></dd></dl>
+ <dl><dt><a name="-timeout_add"><strong>timeout_add</strong></a>(*args, **kwargs)</dt><dd><tt>see&nbsp;<a href="#Script">Script</a>.<a href="#-timeout_add">timeout_add</a>()</tt></dd></dl>
  <dl><dt><a name="-window_create"><strong>window_create</strong></a>(...)</dt><dd><tt><a href="#-window_create">window_create</a>(item=None,&nbsp;automatic=False)&nbsp;-&gt;&nbsp;<a href="#Window">Window</a>&nbsp;<a href="__builtin__.html#object">object</a><br>
 &nbsp;<br>
 Create&nbsp;a&nbsp;new&nbsp;window</tt></dd></dl>
