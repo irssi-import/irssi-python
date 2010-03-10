@@ -389,17 +389,18 @@ PyDoc_STRVAR(PyIrcServer_redirect_get_signal_doc,
 );
 static PyObject *PyIrcServer_redirect_get_signal(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"event", "args", NULL};
+    static char *kwlist[] = {"prefix", "event", "args", NULL};
+    char *prefix = "";
     char *event = "";
     char *pargs = "";
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &event, &pargs))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &prefix, &event, &pargs))
         return NULL;
 
-    RET_AS_STRING_OR_NONE(server_redirect_get_signal(self->data, event, pargs));
+    RET_AS_STRING_OR_NONE(server_redirect_get_signal(self->data, prefix, event, pargs));
 }
 
 PyDoc_STRVAR(PyIrcServer_redirect_peek_signal_doc,
@@ -407,18 +408,19 @@ PyDoc_STRVAR(PyIrcServer_redirect_peek_signal_doc,
 );
 static PyObject *PyIrcServer_redirect_peek_signal(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"event", "args", NULL};
+    static char *kwlist[] = {"prefix", "event", "args", NULL};
+    char *prefix = "";
     char *event = "";
     char *pargs = "";
     int redirection;
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &event, &pargs))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
+           &prefix, &event, &pargs))
         return NULL;
 
-    RET_AS_STRING_OR_NONE(server_redirect_peek_signal(self->data, event, pargs, &redirection));
+    RET_AS_STRING_OR_NONE(server_redirect_peek_signal(self->data, prefix, event, pargs, &redirection));
 }
 
 /* Methods for object */

@@ -77,23 +77,12 @@ static PyObject *PyNotifylist_away_check_get(PyNotifylist *self, void *closure)
     return PyBool_FromLong(NOTIFYLIST(self->data)->away_check);
 }
 
-PyDoc_STRVAR(PyNotifylist_idle_check_time_doc,
-    "Notify when idle time is reset and idle was bigger than this (seconds)"
-);
-static PyObject *PyNotifylist_idle_check_time_get(PyNotifylist *self, void *closure)
-{
-    RET_NULL_IF_INVALID(self->data);
-    return PyLong_FromUnsignedLong(NOTIFYLIST(self->data)->idle_check_time);
-}
-
 /* specialized getters/setters */
 static PyGetSetDef PyNotifylist_getseters[] = {
     {"mask", (getter)PyNotifylist_mask_get, NULL,
         PyNotifylist_mask_doc, NULL},
     {"away_check", (getter)PyNotifylist_away_check_get, NULL,
         PyNotifylist_away_check_doc, NULL},
-    {"idle_check_time", (getter)PyNotifylist_idle_check_time_get, NULL,
-        PyNotifylist_idle_check_time_doc, NULL},
     {NULL}
 };
 

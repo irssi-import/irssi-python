@@ -2,7 +2,6 @@
 #define _PYIRSSI_H_
 
 #define MODULE_NAME "python"
-#include "config.h"
 #include "core.h"
 #include "common.h"
 #include "modules.h"

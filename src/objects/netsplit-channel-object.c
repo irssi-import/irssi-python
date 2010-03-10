@@ -171,7 +171,7 @@ PyObject *pynetsplit_channel_new(void *netsplit)
     pynetsplit->name = name;
     pynetsplit->op = rec->op;
     pynetsplit->halfop = rec->halfop;
-    pynetsplit->other = rec->other;
+    pynetsplit->other = 0;
     
     return (PyObject *)pynetsplit;
 }

@@ -3,7 +3,7 @@
 
 #AC_PREREQ(2.59)
 AC_INIT(irssi-python, test3, loafier@gmail.com)
-AC_CONFIG_SRCDIR([src/pyconstants.c])
+AC_CONFIG_SRCDIR([src/pycore.c])
 AC_CONFIG_HEADER([pyirssi-config.h])
 AM_INIT_AUTOMAKE([irssi-python], [test3])
 AM_DISABLE_STATIC
@@ -63,5 +63,5 @@ fi
 #AC_CONFIG_FILES([src/Makefile src/objects/Makefile])
 #AC_OUTPUT([Makefile src/Makefile src/objects/Makefile])
 #AC_OUTPUT([Makefile src/Makefile src/objects/Makefile])
-AC_CONFIG_FILES([Makefile scripts/Makefile docs/Makefile src/Makefile src/objects/Makefile])
+AC_CONFIG_FILES([Makefile scripts/Makefile  src/Makefile src/objects/Makefile])
 AC_OUTPUT

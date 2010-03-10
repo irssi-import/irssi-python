@@ -807,18 +807,17 @@ PyDoc_STRVAR(py_notifylist_add_doc,
 );
 static PyObject *py_notifylist_add(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"mask", "ircnets", "away_check", "idle_check_time", NULL};
+    static char *kwlist[] = {"mask", "ircnets", "away_check", NULL};
     char *mask = "";
     char *ircnets = NULL;
     int away_check = 0;
-    int idle_check_time = 0;
     NOTIFYLIST_REC *rec;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zii", kwlist, 
-           &mask, &ircnets, &away_check, &idle_check_time))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zi", kwlist, 
+           &mask, &ircnets, &away_check))
         return NULL;
 
-    rec = notifylist_add(mask, ircnets, away_check, idle_check_time);
+    rec = notifylist_add(mask, ircnets, away_check);
     if (rec)
         return pynotifylist_new(rec);
 
@@ -905,12 +904,13 @@ static PyObject *py_level2bits(PyObject *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"level", NULL};
     char *level = "";
+    int error = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
            &level))
         return NULL;
 
-    return PyLong_FromUnsignedLong(level2bits(level));
+    return PyLong_FromUnsignedLong(level2bits(level, &error));
 }
 
 PyDoc_STRVAR(py_bits2level_doc,
