@@ -1,38 +1,37 @@
-Prior to building irssi-python, you'll need Python 2.4, glib 2.0, and Irssi 
-installed.
+Installing irssi-python
+=======================
 
-1. Download and unpack the irssi source (ie irssi-0.8.10a.tar.gz) if you haven't
-   done so already. irssi-python will need access to Irssi's headers. 
+* some prerequisites (Debian example:)
 
-2. Run the configure script, making sure to specify the correct location of
-   Irssi's distribution with the --with-irssi switch. For example:
+# apt-get install python-dev libglib2.0-dev
 
-   $ configure --with-irssi=~/irssi-0.8.10
+* the configured Irssi sources
+* automake/autoconf
 
-   If configure has trouble linking a Python test program due to missing pthread
-   symbols (occasionally on FreeBSD), try:
 
-   $ LDFLAGS="-pthread" configure --with-irssi=<path/to/distro>
+Working from Git
+----------------
 
-   Make sure the prefix for irssi-python matches Irssi's (/usr, /usr/local,
-   etc) so that the module and scripts are installed in the right places. 
+Generate ./configure script:
 
-3. As usual, run make.
+$ autoreconf -ivf -I.
 
-4. make install if OK. libpython.so should be copied to irssi/modules/,
-   scripts to irssi/scripts/ and irssi-python.html to doc/irssi/.
-  
-5. You should be able to load the module in Irssi after installing, IE:
-   
-   /load python
+Configure & Compile
+-------------------
 
-   If you get missing pthread symbols, you may have to preload the thread safe
-   C library before running irssi. export LD_PRELOAD=/usr/lib/libc_r.so seems to
-   work on FreeBSD.
+$ ./configure --with-irssi=PATH/TO/irssi-sources
+$ make -C src constants
+$ make
 
-   You may want to load one of the example scripts like hello or fork:
+as root
 
-   /py load fork
-   /forkoff
+# make install
 
-Also check out README and docs/irssi-python.html
+or:
+
+$ mkdir -p ~/.irssi/modules
+$ cp src/.libs/libpython.so ~/.irssi/modules
+
+Auto-loading the module
+-----------------------
+echo 'load python' >> ~/.irssi/startup
