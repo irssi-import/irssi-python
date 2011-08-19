@@ -43,6 +43,8 @@ static void PyChannel_dealloc(PyChannel *self)
     if (self->cleanup_installed)
         signal_remove_data("channel destroyed", chan_cleanup, self);
 
+    Py_XDECREF(self->server);
+
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -216,7 +218,10 @@ static PyObject *PyChannel_nicks(PyChannel *self, PyObject *args)
 {
     RET_NULL_IF_INVALID(self->data);
 
-    return py_irssi_chatlist_new(nicklist_getnicks(self->data), 1);
+    GSList *nicks = nicklist_getnicks(self->data);
+    PyObject *obj = py_irssi_chatlist_new(nicks, 1);
+    g_slist_free(nicks);
+    return obj;
 }
 
 PyDoc_STRVAR(PyChannel_nicks_find_mask_doc,

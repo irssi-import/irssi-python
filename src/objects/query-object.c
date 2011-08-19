@@ -45,6 +45,8 @@ static void PyQuery_dealloc(PyQuery *self)
     if (self->cleanup_installed)
         signal_remove_data("query destroyed", query_cleanup, self);
 
+    Py_XDECREF(self->server);
+
     self->ob_type->tp_free((PyObject*)self);
 }
 
