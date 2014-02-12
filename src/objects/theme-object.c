@@ -82,9 +82,12 @@ static PyObject *PyTheme_format_expand(PyTheme *self, PyObject *args, PyObject *
 
     if (flags == 0)
         ret = theme_format_expand(self->data, format);
-    else
-        ret = theme_format_expand_data(self->data, (const char **)&format, 'n', 'n',
-                NULL, NULL, EXPAND_FLAG_ROOT | flags);
+    else {
+	theme_rm_col reset;
+	strcpy(reset.m, "n");
+        ret = theme_format_expand_data(self->data, (const char **)&format,
+		reset, reset, NULL, NULL, EXPAND_FLAG_ROOT | flags);
+    }
 
     if (ret)
     {
