@@ -6,7 +6,7 @@ libpython_la_DEPENDENCIES = objects/libobjects.la
 libpython_la_LIBADD = $(PYTHON_LDFLAGS) objects/libobjects.la
 libpython_la_LDFLAGS = -avoid-version
 
-INCLUDES = $(IRSSI_PYTHON_INCLUDES) \
+AM_CPPFLAGS = $(IRSSI_PYTHON_INCLUDES) \
 		   -I$(top_srcdir)/src/objects \
 		   -DSCRIPTDIR=\""$(datadir)/irssi/scripts"\"
 

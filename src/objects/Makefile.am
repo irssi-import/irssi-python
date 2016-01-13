@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libobjects.la
 
-INCLUDES = $(IRSSI_PYTHON_INCLUDES) \
+AM_CPPFLAGS = $(IRSSI_PYTHON_INCLUDES) \
 		   -I$(top_srcdir)/src 
 
 libobjects_la_SOURCES = \

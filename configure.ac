@@ -2,10 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 #AC_PREREQ(2.59)
-AC_INIT(irssi-python, test3, loafier@gmail.com)
+AC_INIT([irssi-python], [test3], [loafier@gmail.com])
 AC_CONFIG_SRCDIR([src/pycore.c])
 AC_CONFIG_HEADER([pyirssi-config.h])
-AM_INIT_AUTOMAKE([irssi-python], [test3])
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([foreign])
 AM_DISABLE_STATIC
 AM_PROG_LIBTOOL
 
