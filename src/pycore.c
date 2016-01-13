@@ -189,3 +189,10 @@ void python_deinit(void)
     pysignals_deinit();
     Py_Finalize();
 }
+
+#ifdef IRSSI_ABI_VERSION
+void python_abicheck(int* version)
+{
+    *version = IRSSI_ABI_VERSION;
+}
+#endif
