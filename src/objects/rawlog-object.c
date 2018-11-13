@@ -24,6 +24,10 @@
 #include "rawlog-object.h"
 #include "pycore.h"
 
+#if defined(IRSSI_ABI_VERSION) && IRSSI_ABI_VERSION >= 18
+#define RAWLOG18
+#endif
+
 /* monitor "????" signal */
 static void rawlog_cleanup(RAWLOG_REC *ban)
 {
@@ -64,7 +68,13 @@ PyDoc_STRVAR(PyRawlog_nlines_doc,
 static PyObject *PyRawlog_nlines_get(PyRawlog *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->nlines);
+    return PyInt_FromLong(
+#ifdef RAWLOG18
+	self->data->lines->length
+#else
+	self->data->nlines
+#endif
+    );
 }
 
 /* specialized getters/setters */
@@ -93,7 +103,14 @@ static PyObject *PyRawlog_get_lines(PyRawlog *self, PyObject *args)
     if (!lines)
         return NULL;
 
-    for (node = self->data->lines; node; node = node->next)
+    for (node =
+#ifdef RAWLOG18
+	     self->data->lines->head
+#else
+	     self->data->lines
+#endif
+	     ;
+	 node; node = node->next)
     {
         int ret;
         PyObject *line = PyString_FromString(node->data);
