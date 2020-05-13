@@ -10,8 +10,9 @@
    i -> int
 
  Lists of things (completion.c and massjoin.c) 
-   G -> GList * of char* 
+   G -> GList * of char *s
    L -> GSList of NICK_RECs
+   F -> formatnum_args
 
  Chat objects
    c -> CHATNET_REC
@@ -41,4 +42,5 @@
    p -> PROCESS_REC
    t -> TEXT_DEST_REC
    w -> WINDOW_REC
+   T -> THEME_REC
 
