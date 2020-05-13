@@ -45,7 +45,7 @@ static void PyChannel_dealloc(PyChannel *self)
 
     Py_XDECREF(self->server);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* Getters */
@@ -100,7 +100,7 @@ PyDoc_STRVAR(PyChannel_limit_doc,
 static PyObject *PyChannel_limit_get(PyChannel *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->limit);
+    return PyLong_FromLong(self->data->limit);
 }
 
 PyDoc_STRVAR(PyChannel_key_doc,
@@ -236,8 +236,7 @@ static PyObject *PyChannel_nicks_find_mask(PyChannel *self, PyObject *args, PyOb
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &mask))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &mask))
         return NULL;
 
     return py_irssi_chat_new(nicklist_find_mask(self->data, mask), 1);
@@ -255,8 +254,7 @@ static PyObject *PyChannel_nick_find(PyChannel *self, PyObject *args, PyObject *
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &nick))
         return NULL;
 
     return py_irssi_chat_new(nicklist_find(self->data, nick), 1);
@@ -326,47 +324,16 @@ static PyMethodDef PyChannel_methods[] = {
 };
 
 PyTypeObject PyChannelType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Channel",            /*tp_name*/
-    sizeof(PyChannel),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyChannel_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyChannel objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyChannel_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyChannel_getseters,        /* tp_getset */
-    &PyWindowItemType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Channel",                          /*tp_name*/
+    .tp_basicsize = sizeof(PyChannel),                        /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyChannel_dealloc,            /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyChannel objects",                      /* tp_doc */
+    .tp_methods   = PyChannel_methods,                        /* tp_methods */
+    .tp_getset    = PyChannel_getseters,                      /* tp_getset */
+    .tp_base      = &PyWindowItemType,                        /* tp_base */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pychannel_sub_new(void *chan, const char *name, PyTypeObject *type) 

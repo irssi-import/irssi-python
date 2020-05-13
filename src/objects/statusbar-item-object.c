@@ -40,9 +40,9 @@ static void statusbar_item_cleanup(SBAR_ITEM_REC *sbar_item)
 static void PyStatusbarItem_dealloc(PyStatusbarItem *self)
 {
     if (self->cleanup_installed)
-        signal_remove_data("sbar_itemlist remove", statusbar_item_cleanup, self); 
+        signal_remove_data("sbar_itemlist remove", statusbar_item_cleanup, self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyStatusbarItem_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -63,7 +63,7 @@ PyDoc_STRVAR(PyStatusbarItem_min_size_doc,
 static PyObject *PyStatusbarItem_min_size_get(PyStatusbarItem *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->min_size);
+    return PyLong_FromLong(self->data->min_size);
 }
 
 PyDoc_STRVAR(PyStatusbarItem_max_size_doc,
@@ -72,7 +72,7 @@ PyDoc_STRVAR(PyStatusbarItem_max_size_doc,
 static PyObject *PyStatusbarItem_max_size_get(PyStatusbarItem *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->max_size);
+    return PyLong_FromLong(self->data->max_size);
 }
 
 PyDoc_STRVAR(PyStatusbarItem_xpos_doc,
@@ -81,7 +81,7 @@ PyDoc_STRVAR(PyStatusbarItem_xpos_doc,
 static PyObject *PyStatusbarItem_xpos_get(PyStatusbarItem *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->xpos);
+    return PyLong_FromLong(self->data->xpos);
 }
 
 PyDoc_STRVAR(PyStatusbarItem_size_doc,
@@ -90,7 +90,7 @@ PyDoc_STRVAR(PyStatusbarItem_size_doc,
 static PyObject *PyStatusbarItem_size_get(PyStatusbarItem *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->size);
+    return PyLong_FromLong(self->data->size);
 }
 
 PyDoc_STRVAR(PyStatusbarItem_window_doc,
@@ -113,13 +113,13 @@ static int py_setint(int *iv, PyObject *value)
         return -1;
     }
 
-    if (!PyInt_Check(value))
+    if (!PyLong_Check(value))
     {
         PyErr_SetString(PyExc_TypeError, "value must be int");
         return -1;
     }
-   
-    tmp = PyInt_AsLong(value);
+
+    tmp = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
    
@@ -189,47 +189,16 @@ static PyMethodDef PyStatusbarItem_methods[] = {
 };
 
 PyTypeObject PyStatusbarItemType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.StatusbarItem",            /*tp_name*/
-    sizeof(PyStatusbarItem),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyStatusbarItem_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyStatusbarItem objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyStatusbarItem_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyStatusbarItem_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyStatusbarItem_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.StatusbarItem",                    /*tp_name*/
+    .tp_basicsize = sizeof(PyStatusbarItem),                  /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyStatusbarItem_dealloc,      /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyStatusbarItem objects",                /* tp_doc */
+    .tp_methods   = PyStatusbarItem_methods,                  /* tp_methods */
+    .tp_getset    = PyStatusbarItem_getseters,                /* tp_getset */
+    .tp_new       = PyStatusbarItem_new,                      /* tp_new */
 };
-
 
 /* sbar_item factory function */
 PyObject *pystatusbar_item_new(void *sbar_item)

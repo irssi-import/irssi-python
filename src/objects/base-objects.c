@@ -31,7 +31,7 @@
 
 static void PyIrssiBase_dealloc(PyIrssiBase *self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyIrssiBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -52,7 +52,7 @@ PyDoc_STRVAR(PyIrssiBase_type_id_doc,
 static PyObject *PyIrssiBase_type_id_get(PyIrssiBase *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->type);
+    return PyLong_FromLong(self->data->type);
 }
 
 PyDoc_STRVAR(PyIrssiBase_type_doc,
@@ -92,47 +92,16 @@ static PyMethodDef PyIrssiBase_methods[] = {
 };
 
 PyTypeObject PyIrssiBaseType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.IrssiBase",            /*tp_name*/
-    sizeof(PyIrssiBase),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyIrssiBase_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyIrssiBase objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyIrssiBase_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyIrssiBase_getseters,        /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyIrssiBase_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.IrssiBase",                        /*tp_name*/
+    .tp_basicsize = sizeof(PyIrssiBase),                      /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyIrssiBase_dealloc,          /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyIrssiBase objects",                    /* tp_doc */
+    .tp_methods   = PyIrssiBase_methods,                      /* tp_methods */
+    .tp_getset    = PyIrssiBase_getseters,                    /* tp_getset */
+    .tp_new       = PyIrssiBase_new,                          /* tp_new */
 };
-
 
 /* IrssiChatBase is a base type for any object with a chat type. The user
    can find the chat type string name with the chat_type member or
@@ -141,7 +110,7 @@ PyTypeObject PyIrssiBaseType = {
 
 static void PyIrssiChatBase_dealloc(PyIrssiChatBase *self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyIrssiChatBase_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -162,7 +131,7 @@ PyDoc_STRVAR(PyIrssiChatBase_chat_type_id_doc,
 static PyObject *PyIrssiChatBase_chat_type_id_get(PyIrssiChatBase *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->chat_type);
+    return PyLong_FromLong(self->data->chat_type);
 }
 
 PyDoc_STRVAR(PyIrssiChatBase_chat_type_doc,
@@ -196,45 +165,16 @@ static PyMethodDef PyIrssiChatBase_methods[] = {
 };
 
 PyTypeObject PyIrssiChatBaseType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.IrssiChatBase",            /*tp_name*/
-    sizeof(PyIrssiChatBase),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyIrssiChatBase_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyIrssiChatBase objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyIrssiChatBase_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyIrssiChatBase_getseters,        /* tp_getset */
-    &PyIrssiBaseType,         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyIrssiChatBase_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.IrssiChatBase",                    /*tp_name*/
+    .tp_basicsize = sizeof(PyIrssiChatBase),                  /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyIrssiChatBase_dealloc,      /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyIrssiChatBase objects",                /* tp_doc */
+    .tp_methods   = PyIrssiChatBase_methods,                  /* tp_methods */
+    .tp_getset    = PyIrssiChatBase_getseters,                /* tp_getset */
+    .tp_base      = &PyIrssiBaseType,                         /* tp_base */
+    .tp_new       = PyIrssiChatBase_new,                      /* tp_new */
 };
 
 int base_objects_init(void) 

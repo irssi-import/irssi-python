@@ -12,7 +12,7 @@ int pyloader_load_script_argv(char **argv);
 int pyloader_load_script(char *name);
 int pyloader_unload_script(const char *name);
 PyObject *pyloader_find_script_obj(void);
-char *pyloader_find_script_name(void);
+const char *pyloader_find_script_name(void);
 
 GSList *pyloader_list(void);
 void pyloader_list_destroy(GSList **list);

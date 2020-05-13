@@ -77,18 +77,18 @@ do {                                                                    \
 } while (0)
 
 #define RET_AS_STRING_OR_NONE(str)          \
-do {                                        \
-    if (str)                                \
-        return PyString_FromString(str);    \
-    else                                    \
+    do                                      \
     {                                       \
-        Py_INCREF(Py_None);                 \
-        return Py_None;                     \
-    }                                       \
-} while (0)
+        if (str)                            \
+            return PyBytes_FromString(str); \
+        else                                \
+        {                                   \
+            Py_INCREF(Py_None);             \
+            return Py_None;                 \
+        }                                   \
+    } while (0)
 
-
-#define RET_AS_STRING_OR_EMPTY(str) return PyString_FromString(str? str : "")
+#define RET_AS_STRING_OR_EMPTY(str) return PyBytes_FromString(str ? str : "")
 
 #define RET_AS_OBJ_OR_NONE(obj) \
 do {                            \

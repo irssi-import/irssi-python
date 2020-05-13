@@ -62,7 +62,7 @@ PyDoc_STRVAR(PyWindowItem_data_level_doc,
 static PyObject *PyWindowItem_data_level_get(PyWindowItem *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->data_level);
+    return PyLong_FromLong(self->data->data_level);
 }
 
 PyDoc_STRVAR(PyWindowItem_hilight_color_doc,
@@ -102,8 +102,8 @@ static PyObject *PyWindowItem_prnt(PyWindowItem *self, PyObject *args, PyObject 
     int level = MSGLEVEL_CLIENTNOTICE;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &str, &level))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &str, &level))
         return NULL;
 
     printtext_string(self->data->server, self->data->visible_name, level, str);
@@ -122,8 +122,8 @@ static PyObject *PyWindowItem_command(PyWindowItem *self, PyObject *args, PyObje
     char *cmd;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &cmd))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     py_command(cmd, self->data->server, self->data);
@@ -211,8 +211,8 @@ static PyObject *PyWindowItem_activity(PyWindowItem *self, PyObject *args, PyObj
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is", kwlist, 
-           &data_level, &hilight_color))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iy", kwlist, &data_level,
+                                     &hilight_color))
         return NULL;
 
     window_item_activity(self->data, data_level, hilight_color);
@@ -269,47 +269,15 @@ static PyMethodDef PyWindowItem_methods[] = {
 };
 
 PyTypeObject PyWindowItemType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.WindowItem",            /*tp_name*/
-    sizeof(PyWindowItem),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    0,                      /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyWindowItem objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyWindowItem_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyWindowItem_getseters,        /* tp_getset */
-    &PyIrssiChatBaseType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.WindowItem",                       /*tp_name*/
+    .tp_basicsize = sizeof(PyWindowItem),                     /*tp_basicsize*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyWindowItem objects",                   /* tp_doc */
+    .tp_methods   = PyWindowItem_methods,                     /* tp_methods */
+    .tp_getset    = PyWindowItem_getseters,                   /* tp_getset */
+    .tp_base      = &PyIrssiChatBaseType,                     /* tp_base */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pywindow_item_sub_new(void *witem, const char *name, PyTypeObject *subclass)

@@ -38,8 +38,8 @@ static void PyTextDest_dealloc(PyTextDest *self)
         g_free((char*)self->data->target);
         g_free(self->data);
     }
-    
-    self->ob_type->tp_free((PyObject*)self);
+
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyTextDest_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -67,8 +67,8 @@ static int PyTextDest_init(PyTextDest *self, PyObject *args, PyObject *kwds)
     PyObject *server = NULL, *window = NULL;
     TEXT_DEST_REC *dest;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ioo", kwlist, 
-            &target, &level, &server, &window))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|ioo", kwlist, &target,
+                                     &level, &server, &window))
         return -1;
  
     if (server == Py_None)
@@ -137,7 +137,7 @@ PyDoc_STRVAR(PyTextDest_level_doc,
 static PyObject *PyTextDest_level_get(PyTextDest *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->level);
+    return PyLong_FromLong(self->data->level);
 }
 
 PyDoc_STRVAR(PyTextDest_hilight_priority_doc,
@@ -146,7 +146,7 @@ PyDoc_STRVAR(PyTextDest_hilight_priority_doc,
 static PyObject *PyTextDest_hilight_priority_get(PyTextDest *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->hilight_priority);
+    return PyLong_FromLong(self->data->hilight_priority);
 }
 
 PyDoc_STRVAR(PyTextDest_hilight_color_doc,
@@ -188,8 +188,7 @@ static PyObject *PyTextDest_prnt(PyTextDest *self, PyObject *args, PyObject *kwd
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &str))
         return NULL;
 
     printtext_dest(self->data, "%s", str);
@@ -205,45 +204,16 @@ static PyMethodDef PyTextDest_methods[] = {
 };
 
 PyTypeObject PyTextDestType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.TextDest",            /*tp_name*/
-    sizeof(PyTextDest),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyTextDest_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    PyTextDest_doc,           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyTextDest_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyTextDest_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)PyTextDest_init,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyTextDest_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.TextDest",                         /*tp_name*/
+    .tp_basicsize = sizeof(PyTextDest),                       /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyTextDest_dealloc,           /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = PyTextDest_doc,                           /* tp_doc */
+    .tp_methods   = PyTextDest_methods,                       /* tp_methods */
+    .tp_getset    = PyTextDest_getseters,                     /* tp_getset */
+    .tp_init      = (initproc)PyTextDest_init,                /* tp_init */
+    .tp_new       = PyTextDest_new,                           /* tp_new */
 };
 
 static int pytextdest_setup(PyTextDest *pytdest, void *td, int owned)
@@ -257,11 +227,16 @@ static int pytextdest_setup(PyTextDest *pytdest, void *td, int owned)
         if (!window)
             return 0;
     }
+    else
+    {
+        window = NULL;
+    }
 
     server = py_irssi_chat_new(tdest->server, 1);
     if (!server)
     {
-        Py_DECREF(window);
+        if (window)
+            Py_DECREF(window);
         return 0;
     }
 

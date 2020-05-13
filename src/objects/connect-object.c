@@ -28,9 +28,9 @@
 
 static void connect_cleanup(SERVER_CONNECT_REC *connect)
 {
+    /*
     PyConnect *pyconn = signal_get_user_data();
 
-    /*
     if (server == pyconn->data)
     {
         pyserver->data = NULL;
@@ -45,7 +45,7 @@ static void PyConnect_dealloc(PyConnect *self)
     if (self->cleanup_installed)
         signal_remove_data("server disconnected", connect_cleanup, self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* Getters */
@@ -64,7 +64,7 @@ PyDoc_STRVAR(PyConnect_port_doc,
 static PyObject *PyConnect_port_get(PyConnect *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->port);
+    return PyLong_FromLong(self->data->port);
 }
 
 PyDoc_STRVAR(PyConnect_chatnet_doc,
@@ -132,47 +132,15 @@ static PyGetSetDef PyConnect_getseters[] = {
 };
 
 PyTypeObject PyConnectType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Connect",            /*tp_name*/
-    sizeof(PyConnect),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyConnect_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyConnect objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    0,                      /* tp_methods */
-    0,                      /* tp_members */
-    PyConnect_getseters,        /* tp_getset */
-    &PyIrssiChatBaseType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Connect",                          /*tp_name*/
+    .tp_basicsize = sizeof(PyConnect),                        /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyConnect_dealloc,            /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyConnect objects",                      /* tp_doc */
+    .tp_getset    = PyConnect_getseters,                      /* tp_getset */
+    .tp_base      = &PyIrssiChatBaseType,                     /* tp_base */
 };
-
 
 /* server connect factory function (managed == 0, don't do signal cleanup, 1 == do sig cleanup */
 PyObject *pyconnect_sub_new(void *connect, PyTypeObject *subclass, int managed)

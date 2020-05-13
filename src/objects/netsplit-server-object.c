@@ -43,9 +43,9 @@ static void netsplit_server_cleanup(NETSPLIT_SERVER_REC *netsplit)
 static void PyNetsplitServer_dealloc(PyNetsplitServer *self)
 {
     if (self->cleanup_installed)
-        signal_remove_data("netsplit remove", netsplit_server_cleanup, self); 
+        signal_remove_data("netsplit remove", netsplit_server_cleanup, self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyNetsplitServer_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -84,7 +84,7 @@ PyDoc_STRVAR(PyNetsplitServer_count_doc,
 static PyObject *PyNetsplitServer_count_get(PyNetsplitServer *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(NETSPLIT_SERVER(self->data)->count);
+    return PyLong_FromLong(NETSPLIT_SERVER(self->data)->count);
 }
 
 /* specialized getters/setters */
@@ -105,47 +105,16 @@ static PyMethodDef PyNetsplitServer_methods[] = {
 };
 
 PyTypeObject PyNetsplitServerType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.NetsplitServer",            /*tp_name*/
-    sizeof(PyNetsplitServer),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyNetsplitServer_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyNetsplitServer objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyNetsplitServer_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyNetsplitServer_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyNetsplitServer_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.NetsplitServer",                   /*tp_name*/
+    .tp_basicsize = sizeof(PyNetsplitServer),                 /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyNetsplitServer_dealloc,     /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyNetsplitServer objects",               /* tp_doc */
+    .tp_methods   = PyNetsplitServer_methods,                 /* tp_methods */
+    .tp_getset    = PyNetsplitServer_getseters,               /* tp_getset */
+    .tp_new       = PyNetsplitServer_new,                     /* tp_new */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pynetsplit_server_new(void *nss)

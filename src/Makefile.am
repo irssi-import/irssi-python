@@ -3,7 +3,7 @@ wrappersdir = $(datadir)/irssi/scripts
 module_LTLIBRARIES = libpython.la
 
 libpython_la_DEPENDENCIES = objects/libobjects.la
-libpython_la_LIBADD = $(PYTHON_LDFLAGS) objects/libobjects.la
+libpython_la_LIBADD = $(PYTHON_LIBS) objects/libobjects.la
 libpython_la_LDFLAGS = -avoid-version
 
 AM_CPPFLAGS = $(IRSSI_PYTHON_INCLUDES) \

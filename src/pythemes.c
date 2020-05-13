@@ -53,12 +53,13 @@ int pythemes_printformat(TEXT_DEST_REC *dest, const char *name, const char *form
         PyObject *obj = PyTuple_GET_ITEM(argtup, i);
         char *str;
 
-        if (!PyString_Check(obj)) {
+        if (!PyBytes_Check(obj))
+        {
             PyErr_Format(PyExc_TypeError, "format argument list contains non-string data");
             return 0;
         }
 
-        str = PyString_AsString(obj);
+        str = PyBytes_AsString(obj);
         if (!str)
             return 0;
         
@@ -182,7 +183,7 @@ static PyObject *py_printformat(PyObject *self, PyObject *all)
     char *target;
     PyObject *args = NULL, *varargs = NULL;
     TEXT_DEST_REC dest;
-    char *script;
+    const char *script;
     int formatstart;
 
     if (self && pyserver_check(self))

@@ -56,7 +56,7 @@ static void PyScript_dealloc(PyScript* self)
     pyscript_remove_signals((PyObject*)self);
     pyscript_remove_sources((PyObject*)self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyScript_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -98,10 +98,10 @@ static PyObject *PyScript_command_bind(PyScript *self, PyObject *args, PyObject 
     char *cmd;
     PyObject *func;
     char *category = NULL;
-    int priority = SIGNAL_PRIORITY_DEFAULT; 
+    int priority = SIGNAL_PRIORITY_DEFAULT;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|zi", kwlist, 
-                &cmd, &func, &category, &priority))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yO|zi", kwlist, &cmd, &func,
+                                     &category, &priority))
         return NULL;
 
     if (!PyCallable_Check(func))
@@ -123,10 +123,10 @@ static PyObject *PyScript_signal_add(PyScript *self, PyObject *args, PyObject *k
     static char *kwlist[] = {"signal", "func", "priority", NULL};
     char *signal;
     PyObject *func;
-    int priority = SIGNAL_PRIORITY_DEFAULT; 
+    int priority = SIGNAL_PRIORITY_DEFAULT;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|i", kwlist, 
-                &signal, &func, &priority))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yO|i", kwlist, &signal, &func,
+                                     &priority))
         return NULL;
 
     if (!PyCallable_Check(func))
@@ -149,8 +149,7 @@ static PyObject *PyScript_signal_remove(PyScript *self, PyObject *args, PyObject
     char *signal = "";
     PyObject *func = Py_None;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O", kwlist, 
-           &signal, &func))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|O", kwlist, &signal, &func))
         return NULL;
 
     if (!PyCallable_Check(func) && func != Py_None)
@@ -176,8 +175,8 @@ static PyObject *PyScript_command_unbind(PyScript *self, PyObject *args, PyObjec
     char *command = "";
     PyObject *func = Py_None;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O", kwlist, 
-           &command, &func))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|O", kwlist, &command,
+                                     &func))
         return NULL;
 
     if (!PyCallable_Check(func) && func != Py_None)
@@ -236,8 +235,8 @@ static PyObject *PyScript_signal_register(PyScript *self, PyObject *args, PyObje
     char *arglist = "";
     int i;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &signal, &arglist))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &signal,
+                                     &arglist))
         return NULL;
 
     for (i = 0; arglist[i]; i++)
@@ -269,8 +268,7 @@ static PyObject *PyScript_signal_unregister(PyScript *self, PyObject *args, PyOb
     char *signal = "";
     GSList *search;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &signal))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &signal))
         return NULL;
 
     search = g_slist_find_custom(self->registered_signals, signal, (GCompareFunc)strcmp);
@@ -316,7 +314,7 @@ static PyObject *PyScript_timeout_add(PyScript *self, PyObject *args, PyObject *
 
     ret = pysource_timeout_add_list(&self->sources, msecs, func, data);
 
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 
 PyDoc_STRVAR(PyScript_io_add_watch_doc,
@@ -345,7 +343,7 @@ static PyObject *PyScript_io_add_watch(PyScript *self, PyObject *args, PyObject 
     
     ret = pysource_io_add_watch_list(&self->sources, fd, condition, func, data);
 
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 
 PyDoc_STRVAR(PyScript_source_remove_doc,
@@ -409,8 +407,8 @@ static PyObject *PyScript_settings_add_str(PyScript *self, PyObject *args, PyObj
     char *key = "";
     char *def = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -431,8 +429,8 @@ static PyObject *PyScript_settings_add_int(PyScript *self, PyObject *args, PyObj
     char *key = "";
     int def = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyi", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -453,8 +451,8 @@ static PyObject *PyScript_settings_add_bool(PyScript *self, PyObject *args, PyOb
     char *key = "";
     int def = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyi", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -475,8 +473,8 @@ static PyObject *PyScript_settings_add_time(PyScript *self, PyObject *args, PyOb
     char *key = "";
     char *def = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -497,8 +495,8 @@ static PyObject *PyScript_settings_add_level(PyScript *self, PyObject *args, PyO
     char *key = "";
     char *def = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -519,8 +517,8 @@ static PyObject *PyScript_settings_add_size(PyScript *self, PyObject *args, PyOb
     char *key = "";
     char *def = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &section, &key, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &section, &key,
+                                     &def))
         return NULL;
 
     if (!py_settings_add(self, key))
@@ -539,8 +537,7 @@ static PyObject *PyScript_settings_remove(PyScript *self, PyObject *args, PyObje
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
     return PyBool_FromLong(py_settings_remove(self, key));
@@ -574,8 +571,8 @@ static PyObject *PyScript_statusbar_item_register(PyScript *self, PyObject *args
     char *value = NULL;
     PyObject *func = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zO", kwlist, 
-           &name, &value, &func))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|zO", kwlist, &name, &value,
+                                     &func))
         return NULL;
 
     pystatusbar_item_register((PyObject *)self, name, value, func);
@@ -625,52 +622,26 @@ static PyMethodDef PyScript_methods[] = {
 };
 
 static PyMemberDef PyScript_members[] = {
-    {"argv", T_OBJECT, offsetof(PyScript, argv), 0, "Script arguments"},
-    {"module", T_OBJECT_EX, offsetof(PyScript, module), RO, "Script module"},
-    {"modules", T_OBJECT_EX, offsetof(PyScript, modules), 0, "Imported modules"},
-    {NULL}  /* Sentinel */
+    { "argv", T_OBJECT, offsetof(PyScript, argv), 0, "Script arguments" },
+    { "module", T_OBJECT_EX, offsetof(PyScript, module), READONLY,
+      "Script module" },
+    { "modules", T_OBJECT_EX, offsetof(PyScript, modules), 0,
+      "Imported modules" },
+    { NULL } /* Sentinel */
 };
 
 PyTypeObject PyScriptType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Script",               /*tp_name*/
-    sizeof(PyScript),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyScript_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-    "PyScript objects",           /* tp_doc */
-    (traverseproc)PyScript_traverse,		    /* tp_traverse */
-    (inquiry)PyScript_clear,      /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyScript_methods,             /* tp_methods */
-    PyScript_members,             /* tp_members */
-    0,                      /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,                          /* tp_init */
-    0,                         /* tp_alloc */
-    PyScript_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Script",                          /*tp_name*/
+    .tp_basicsize = sizeof(PyScript),                        /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyScript_dealloc,            /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
+    .tp_doc       = "PyScript objects",                      /* tp_doc */
+    .tp_traverse  = (traverseproc)PyScript_traverse,         /* tp_traverse */
+    .tp_clear     = (inquiry)PyScript_clear,                 /* tp_clear */
+    .tp_methods   = PyScript_methods,                        /* tp_methods */
+    .tp_members   = PyScript_members,                        /* tp_members */
+    .tp_new       = PyScript_new,                            /* tp_new */
 };
 
 /* PyScript factory function */
@@ -688,7 +659,7 @@ PyObject *pyscript_new(PyObject *module, char **argv)
         {
             if (**argv != '\0')
             {
-                PyObject *str = PyString_FromString(*argv);
+                PyObject *str = PyBytes_FromString(*argv);
                 if (!str)
                 {
                     /* The destructor should DECREF argv */
@@ -700,7 +671,7 @@ PyObject *pyscript_new(PyObject *module, char **argv)
                 Py_DECREF(str);
             }
 
-            *argv++;
+            argv++;
         }
 
         Py_INCREF(module);
@@ -771,11 +742,7 @@ void pyscript_remove_settings(PyObject *script)
 
 void pyscript_remove_themes(PyObject *script)
 {
-    PyScript *self;
-
     g_return_if_fail(pyscript_check(script));
-
-    self = (PyScript *) script;
 
     pythemes_unregister(pyscript_get_name(script));
 }

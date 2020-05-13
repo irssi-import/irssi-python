@@ -42,9 +42,9 @@ static void notifylist_cleanup(NOTIFYLIST_REC *notifylist)
 static void PyNotifylist_dealloc(PyNotifylist *self)
 {
     if (self->cleanup_installed)
-        signal_remove_data("notifylist remove", notifylist_cleanup, self); 
+        signal_remove_data("notifylist remove", notifylist_cleanup, self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyNotifylist_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -107,7 +107,7 @@ static PyObject *PyNotifylist_ircnets(PyNotifylist *self, PyObject *args)
     while (nets && *nets)
     {
         int ret;
-        PyObject *str = PyString_FromString(*nets);
+        PyObject *str = PyBytes_FromString(*nets);
 
         if (!str)
         {
@@ -141,8 +141,7 @@ static PyObject *PyNotifylist_ircnets_match(PyNotifylist *self, PyObject *args, 
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &ircnet))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &ircnet))
         return NULL;
 
     return PyBool_FromLong(notifylist_ircnets_match(self->data, ircnet));
@@ -158,47 +157,16 @@ static PyMethodDef PyNotifylist_methods[] = {
 };
 
 PyTypeObject PyNotifylistType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Notifylist",            /*tp_name*/
-    sizeof(PyNotifylist),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyNotifylist_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyNotifylist objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyNotifylist_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyNotifylist_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyNotifylist_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Notifylist",                       /*tp_name*/
+    .tp_basicsize = sizeof(PyNotifylist),                     /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyNotifylist_dealloc,         /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyNotifylist objects",                   /* tp_doc */
+    .tp_methods   = PyNotifylist_methods,                     /* tp_methods */
+    .tp_getset    = PyNotifylist_getseters,                   /* tp_getset */
+    .tp_new       = PyNotifylist_new,                         /* tp_new */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pynotifylist_new(void *notifylist)

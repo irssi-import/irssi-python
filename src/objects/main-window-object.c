@@ -46,7 +46,7 @@ static void PyMainWindow_dealloc(PyMainWindow *self)
         signal_remove_data("mainwindow destroyed", main_window_cleanup, self); 
 
     Py_XDECREF(self->active);
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyMainWindow_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -76,7 +76,7 @@ PyDoc_STRVAR(PyMainWindow_first_line_doc,
 static PyObject *PyMainWindow_first_line_get(PyMainWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(MW(self->data)->first_line);
+    return PyLong_FromLong(MW(self->data)->first_line);
 }
 
 PyDoc_STRVAR(PyMainWindow_last_line_doc,
@@ -85,7 +85,7 @@ PyDoc_STRVAR(PyMainWindow_last_line_doc,
 static PyObject *PyMainWindow_last_line_get(PyMainWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(MW(self->data)->last_line);
+    return PyLong_FromLong(MW(self->data)->last_line);
 }
 
 PyDoc_STRVAR(PyMainWindow_width_doc,
@@ -94,7 +94,7 @@ PyDoc_STRVAR(PyMainWindow_width_doc,
 static PyObject *PyMainWindow_width_get(PyMainWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(MW(self->data)->width);
+    return PyLong_FromLong(MW(self->data)->width);
 }
 
 PyDoc_STRVAR(PyMainWindow_height_doc,
@@ -103,7 +103,7 @@ PyDoc_STRVAR(PyMainWindow_height_doc,
 static PyObject *PyMainWindow_height_get(PyMainWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(MW(self->data)->height);
+    return PyLong_FromLong(MW(self->data)->height);
 }
 
 PyDoc_STRVAR(PyMainWindow_statusbar_lines_doc,
@@ -112,7 +112,7 @@ PyDoc_STRVAR(PyMainWindow_statusbar_lines_doc,
 static PyObject *PyMainWindow_statusbar_lines_get(PyMainWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(MW(self->data)->statusbar_lines);
+    return PyLong_FromLong(MW(self->data)->statusbar_lines);
 }
 
 /* specialized getters/setters */
@@ -138,47 +138,16 @@ static PyMethodDef PyMainWindow_methods[] = {
 };
 
 PyTypeObject PyMainWindowType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.MainWindow",            /*tp_name*/
-    sizeof(PyMainWindow),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyMainWindow_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyMainWindow objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyMainWindow_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyMainWindow_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyMainWindow_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.MainWindow",                       /*tp_name*/
+    .tp_basicsize = sizeof(PyMainWindow),                     /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyMainWindow_dealloc,         /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyMainWindow objects",                   /* tp_doc */
+    .tp_methods   = PyMainWindow_methods,                     /* tp_methods */
+    .tp_getset    = PyMainWindow_getseters,                   /* tp_getset */
+    .tp_new       = PyMainWindow_new,                         /* tp_new */
 };
-
 
 /* main window wrapper factory function */
 PyObject *pymain_window_new(MAIN_WINDOW_REC *mw)

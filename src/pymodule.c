@@ -52,8 +52,7 @@ static PyObject *PY_command(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"cmd", NULL};
     char *cmd = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &cmd))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     py_command(cmd, NULL, NULL);
@@ -73,8 +72,8 @@ static PyObject *py_prnt(PyObject *self, PyObject *args, PyObject *kwargs)
     int msglvl = MSGLEVEL_CLIENTNOTICE;
     char *text = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|i:prnt", kwlist, 
-                &text, &msglvl))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "y|i:prnt", kwlist, &text,
+                                     &msglvl))
         return NULL;
 
     printtext_string(NULL, NULL, msglvl, text);
@@ -111,8 +110,7 @@ static PyObject *py_chatnet_find(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"name", NULL};
     char *name = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     return py_irssi_chat_new(chatnet_find(name), 1);
@@ -168,8 +166,7 @@ static PyObject *py_channel_find(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"name", NULL};
     char *name = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     return py_irssi_chat_new(channel_find(NULL, name), 1);
@@ -222,8 +219,7 @@ static PyObject *py_window_find_name(PyObject *self, PyObject *args, PyObject *k
     char *name = "";
     WINDOW_REC *win;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     win = window_find_name(name);
@@ -270,7 +266,7 @@ static PyObject *py_window_refnum_prev(PyObject *self, PyObject *args, PyObject 
            &refnum, &wrap))
         return NULL;
 
-    return PyInt_FromLong(window_refnum_prev(refnum, wrap));
+    return PyLong_FromLong(window_refnum_prev(refnum, wrap));
 }
 
 PyDoc_STRVAR(py_window_refnum_next_doc,
@@ -288,7 +284,7 @@ static PyObject *py_window_refnum_next(PyObject *self, PyObject *args, PyObject 
            &refnum, &wrap))
         return NULL;
 
-    return PyInt_FromLong(window_refnum_next(refnum, wrap));
+    return PyLong_FromLong(window_refnum_next(refnum, wrap));
 }
 
 PyDoc_STRVAR(py_windows_refnum_last_doc,
@@ -298,7 +294,7 @@ PyDoc_STRVAR(py_windows_refnum_last_doc,
 );
 static PyObject *py_windows_refnum_last(PyObject *self, PyObject *args)
 {
-    return PyInt_FromLong(windows_refnum_last());
+    return PyLong_FromLong(windows_refnum_last());
 }
 
 PyDoc_STRVAR(py_window_find_level_doc,
@@ -334,8 +330,7 @@ static PyObject *py_window_find_item(PyObject *self, PyObject *args, PyObject *k
     char *name = "";
     WINDOW_REC *win;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     win = window_find_item(NULL, name);
@@ -358,8 +353,7 @@ static PyObject *py_window_find_closest(PyObject *self, PyObject *args, PyObject
     int level = 0;
     WINDOW_REC *win;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
-           &name, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yi", kwlist, &name, &level))
         return NULL;
 
     win = window_find_closest(NULL, name, level);
@@ -379,8 +373,7 @@ static PyObject *py_window_item_find(PyObject *self, PyObject *args, PyObject *k
     static char *kwlist[] = {"name", NULL};
     char *name = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     return py_irssi_chat_new(window_item_find(NULL, name), 1);
@@ -437,8 +430,7 @@ static PyObject *py_server_find_tag(PyObject *self, PyObject *args, PyObject *kw
     static char *kwlist[] = {"tag", NULL};
     char *tag = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &tag))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &tag))
         return NULL;
 
     return py_irssi_chat_new(server_find_tag(tag), 1);
@@ -454,8 +446,7 @@ static PyObject *py_server_find_chatnet(PyObject *self, PyObject *args, PyObject
     static char *kwlist[] = {"chatnet", NULL};
     char *chatnet = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &chatnet))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &chatnet))
         return NULL;
 
     return py_irssi_chat_new(server_find_chatnet(chatnet), 1);
@@ -481,8 +472,7 @@ static PyObject *py_query_find(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"nick", NULL};
     char *nick = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &nick))
         return NULL;
 
     return py_irssi_chat_new(query_find(NULL, nick), 1);
@@ -501,8 +491,8 @@ static PyObject *py_mask_match(PyObject *self, PyObject *args, PyObject *kwds)
     char *user = "";
     char *host = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssss", kwlist, 
-           &mask, &nick, &user, &host))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyyy", kwlist, &mask, &nick,
+                                     &user, &host))
         return NULL;
 
     return PyBool_FromLong(mask_match(NULL, mask, nick, user, host));
@@ -520,8 +510,8 @@ static PyObject *py_mask_match_address(PyObject *self, PyObject *args, PyObject 
     char *nick = "";
     char *address = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &mask, &nick, &address))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &mask, &nick,
+                                     &address))
         return NULL;
 
     return PyBool_FromLong(mask_match_address(NULL, mask, nick, address));
@@ -540,8 +530,8 @@ static PyObject *py_masks_match(PyObject *self, PyObject *args, PyObject *kwds)
     char *nick = "";
     char *address = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &masks, &nick, &address))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &masks, &nick,
+                                     &address))
         return NULL;
 
     return PyBool_FromLong(masks_match(NULL, masks, nick, address));
@@ -587,8 +577,7 @@ static PyObject *py_log_find(PyObject *self, PyObject *args, PyObject *kwds)
     char *fname = "";
     LOG_REC *log;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &fname))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &fname))
         return NULL;
 
     log = log_find(fname);
@@ -622,8 +611,8 @@ static PyObject *py_ignore_check(PyObject *self, PyObject *args, PyObject *kwds)
     char *text = "";
     int level = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssssi", kwlist, 
-           &nick, &host, &channel, &text, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyyyi", kwlist, &nick, &host,
+                                     &channel, &text, &level))
         return NULL;
 
     return PyBool_FromLong(ignore_check(NULL, nick, host, channel, text, level));
@@ -649,8 +638,7 @@ static PyObject *py_dcc_register_type(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"type", NULL};
     char *type = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &type))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &type))
         return NULL;
 
     dcc_register_type(type);
@@ -668,8 +656,7 @@ static PyObject *py_dcc_unregister_type(PyObject *self, PyObject *args, PyObject
     static char *kwlist[] = {"type", NULL};
     char *type = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &type))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &type))
         return NULL;
 
     dcc_unregister_type(type);
@@ -706,8 +693,8 @@ static PyObject *py_dcc_find_request(PyObject *self, PyObject *args, PyObject *k
     char *nick = "";
     char *arg = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iss", kwlist, 
-           &type, &nick, &arg))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iyy", kwlist, &type, &nick,
+                                     &arg))
         return NULL;
 
     return py_irssi_new(dcc_find_request(type, nick, arg), 1);
@@ -723,8 +710,7 @@ static PyObject *py_dcc_chat_find_id(PyObject *self, PyObject *args, PyObject *k
     static char *kwlist[] = {"id", NULL};
     char *id = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &id))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &id))
         return NULL;
 
     return py_irssi_new(dcc_chat_find_id(id), 1);
@@ -740,11 +726,10 @@ static PyObject *py_dcc_str2type(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"type", NULL};
     char *type = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &type))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &type))
         return NULL;
 
-    return PyInt_FromLong(dcc_str2type(type));
+    return PyLong_FromLong(dcc_str2type(type));
 }
 
 PyDoc_STRVAR(py_dcc_type2str_doc,
@@ -776,15 +761,14 @@ static PyObject *py_dcc_get_download_path(PyObject *self, PyObject *args, PyObje
     char *path;
     PyObject *pypath;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &fname))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &fname))
         return NULL;
 
     path = dcc_get_download_path(fname);
     if (!path)
         Py_RETURN_NONE; /*XXX: how to handle? */
-    
-    pypath = PyString_FromString(path);
+
+    pypath = PyBytes_FromString(path);
     g_free(path);
 
     return pypath;
@@ -813,8 +797,8 @@ static PyObject *py_notifylist_add(PyObject *self, PyObject *args, PyObject *kwd
     int away_check = 0;
     NOTIFYLIST_REC *rec;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zi", kwlist, 
-           &mask, &ircnets, &away_check))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|zi", kwlist, &mask,
+                                     &ircnets, &away_check))
         return NULL;
 
     rec = notifylist_add(mask, ircnets, away_check);
@@ -834,8 +818,7 @@ static PyObject *py_notifylist_remove(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"mask", NULL};
     char *mask = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &mask))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &mask))
         return NULL;
 
     notifylist_remove(mask);
@@ -855,8 +838,8 @@ static PyObject *py_notifylist_ison(PyObject *self, PyObject *args, PyObject *kw
     char *nick = "";
     char *serverlist = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s", kwlist, 
-           &nick, &serverlist))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|y", kwlist, &nick,
+                                     &serverlist))
         return NULL;
 
     return py_irssi_chat_new(notifylist_ison(nick, serverlist), 1);
@@ -874,8 +857,7 @@ static PyObject *py_notifylist_find(PyObject *self, PyObject *args, PyObject *kw
     char *ircnet = NULL;
     NOTIFYLIST_REC *rec;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|z", kwlist, 
-           &mask, &ircnet))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|z", kwlist, &mask, &ircnet))
         return NULL;
 
     rec = notifylist_find(mask, ircnet);
@@ -906,8 +888,7 @@ static PyObject *py_level2bits(PyObject *self, PyObject *args, PyObject *kwds)
     char *level = "";
     int error = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &level))
         return NULL;
 
     return PyLong_FromUnsignedLong(level2bits(level, &error));
@@ -932,7 +913,7 @@ static PyObject *py_bits2level(PyObject *self, PyObject *args, PyObject *kwds)
     str = bits2level(bits);
     if (str)
     {
-        ret = PyString_FromString(str);
+        ret = PyBytes_FromString(str);
         g_free(str);
         return ret;
     }
@@ -951,8 +932,7 @@ static PyObject *py_combine_level(PyObject *self, PyObject *args, PyObject *kwds
     int level = 0;
     char *str = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is", kwlist, 
-           &level, &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iy", kwlist, &level, &str))
         return NULL;
 
     return PyLong_FromUnsignedLong(combine_level(level, str));
@@ -978,10 +958,10 @@ static PyObject *py_signal_emit(PyObject *self, PyObject *args)
                 "no more than %d arguments for signal accepted", SIGNAL_MAX_ARGUMENTS);
 
     pysig = PyTuple_GET_ITEM(args, 0);
-    if (!PyString_Check(pysig))
+    if (!PyBytes_Check(pysig))
         return PyErr_Format(PyExc_TypeError, "signal must be string");
-  
-    name = PyString_AsString(pysig);
+
+    name = PyBytes_AsString(pysig);
     if (!name)
         return NULL;
     
@@ -1035,8 +1015,7 @@ static PyObject *py_signal_stop_by_name(PyObject *self, PyObject *args, PyObject
     static char *kwlist[] = {"signal", NULL};
     char *signal = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &signal))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &signal))
         return NULL;
 
     signal_stop_by_name(signal);
@@ -1061,7 +1040,7 @@ PyDoc_STRVAR(py_signal_get_emitted_id_doc,
 );
 static PyObject *py_signal_get_emitted_id(PyObject *self, PyObject *args)
 {
-    return PyInt_FromLong(signal_get_emitted_id());
+    return PyLong_FromLong(signal_get_emitted_id());
 }
 
 PyDoc_STRVAR(py_settings_get_str_doc,
@@ -1074,8 +1053,7 @@ static PyObject *py_settings_get_str(PyObject *self, PyObject *args, PyObject *k
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
     RET_AS_STRING_OR_NONE(settings_get_str(key));
@@ -1091,11 +1069,10 @@ static PyObject *py_settings_get_int(PyObject *self, PyObject *args, PyObject *k
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
-    return PyInt_FromLong(settings_get_int(key));
+    return PyLong_FromLong(settings_get_int(key));
 }
 
 PyDoc_STRVAR(py_settings_get_bool_doc,
@@ -1108,8 +1085,7 @@ static PyObject *py_settings_get_bool(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
     return PyBool_FromLong(settings_get_bool(key));
@@ -1125,8 +1101,7 @@ static PyObject *py_settings_get_time(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
     return PyLong_FromLong(settings_get_time(key));
@@ -1142,11 +1117,10 @@ static PyObject *py_settings_get_level(PyObject *self, PyObject *args, PyObject 
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
-    return PyInt_FromLong(settings_get_level(key));
+    return PyLong_FromLong(settings_get_level(key));
 }
 
 PyDoc_STRVAR(py_settings_get_size_doc,
@@ -1159,8 +1133,7 @@ static PyObject *py_settings_get_size(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"key", NULL};
     char *key = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &key))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &key))
         return NULL;
 
     return PyLong_FromLong(settings_get_size(key));
@@ -1177,8 +1150,7 @@ static PyObject *py_settings_set_str(PyObject *self, PyObject *args, PyObject *k
     char *key = "";
     char *value = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &key, &value))
         return NULL;
 
     settings_set_str(key, value);
@@ -1197,8 +1169,7 @@ static PyObject *py_settings_set_int(PyObject *self, PyObject *args, PyObject *k
     char *key = "";
     int value = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yi", kwlist, &key, &value))
         return NULL;
 
     settings_set_int(key, value);
@@ -1217,8 +1188,7 @@ static PyObject *py_settings_set_bool(PyObject *self, PyObject *args, PyObject *
     char *key = "";
     int value = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yi", kwlist, &key, &value))
         return NULL;
 
     settings_set_bool(key, value);
@@ -1237,8 +1207,7 @@ static PyObject *py_settings_set_time(PyObject *self, PyObject *args, PyObject *
     char *key = "";
     char *value = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &key, &value))
         return NULL;
 
     return PyBool_FromLong(settings_set_time(key, value));
@@ -1255,8 +1224,7 @@ static PyObject *py_settings_set_level(PyObject *self, PyObject *args, PyObject 
     char *key = "";
     char *value = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &key, &value))
         return NULL;
 
     return PyBool_FromLong(settings_set_level(key, value));
@@ -1273,8 +1241,7 @@ static PyObject *py_settings_set_size(PyObject *self, PyObject *args, PyObject *
     char *key = "";
     char *value = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &key, &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &key, &value))
         return NULL;
 
     return PyBool_FromLong(settings_set_size(key, value));
@@ -1326,11 +1293,10 @@ static PyObject *py_format_get_length(PyObject *self, PyObject *args, PyObject *
     static char *kwlist[] = {"str", NULL};
     char *str = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &str))
         return NULL;
 
-    return PyInt_FromLong(format_get_length(str));
+    return PyLong_FromLong(format_get_length(str));
 }
 
 PyDoc_STRVAR(py_format_real_length_doc,
@@ -1342,11 +1308,10 @@ static PyObject *py_format_real_length(PyObject *self, PyObject *args, PyObject 
     char *str = "";
     int len;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sl", kwlist, 
-           &str, &len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yl", kwlist, &str, &len))
         return NULL;
 
-    return PyInt_FromLong(format_real_length(str, len));
+    return PyLong_FromLong(format_real_length(str, len));
 }
 
 PyDoc_STRVAR(py_strip_codes_doc,
@@ -1359,14 +1324,13 @@ static PyObject *py_strip_codes(PyObject *self, PyObject *args, PyObject *kwds)
     char *ret;
     PyObject *pyret;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &input))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &input))
         return NULL;
 
     ret = strip_codes(input);
     if (ret)
     {
-        pyret = PyString_FromString(ret);
+        pyret = PyBytes_FromString(ret);
         g_free(ret);
         return pyret;
     }
@@ -1427,7 +1391,7 @@ static PyObject *py_format_get_text(PyObject *self, PyObject *varargs)
         PyObject *obj = PyTuple_GET_ITEM(pycharargs, i);
         char *str; 
        
-        if (!PyString_Check(obj))
+        if (!PyBytes_Check(obj))
         {
             PyErr_Format(PyExc_TypeError, 
                     "non string in string argument list (arg %d)", 
@@ -1435,7 +1399,7 @@ static PyObject *py_format_get_text(PyObject *self, PyObject *varargs)
             goto error;
         }
         
-        str = PyString_AsString(obj);
+        str = PyBytes_AsString(obj);
         if (!str)
             goto error;
 
@@ -1452,7 +1416,7 @@ static PyObject *py_format_get_text(PyObject *self, PyObject *varargs)
     {
         PyObject *pyret;
 
-        pyret = PyString_FromString(ret);
+        pyret = PyBytes_FromString(ret);
         g_free(ret);
 
         return pyret;
@@ -1497,8 +1461,7 @@ static PyObject *py_statusbar_items_redraw(PyObject *self, PyObject *args, PyObj
     static char *kwlist[] = {"name", NULL};
     char *name = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     statusbar_items_redraw(name);
@@ -1525,8 +1488,7 @@ static PyObject *py_statusbar_item_unregister(PyObject *self, PyObject *args, Py
     static char *kwlist[] = {"name", NULL};
     char *name = "";
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     pystatusbar_item_unregister(name);
@@ -1578,7 +1540,7 @@ static GSList *py_register_conv(PyObject *list)
         int val;
         PyObject *tup = PyList_GET_ITEM(list, i);
 
-        if (!PyTuple_Check(tup) || !PyArg_ParseTuple(tup, "si", &key, &val))
+        if (!PyTuple_Check(tup) || !PyArg_ParseTuple(tup, "yi", &key, &val))
         {
             if (!PyErr_Occurred() || PyErr_ExceptionMatches(PyExc_TypeError))
             {
@@ -1651,9 +1613,9 @@ static PyObject *py_server_redirect_register(PyObject *self, PyObject *args, PyO
     GSList *gstart = NULL;
     GSList *gstop = NULL;
     GSList *gopt = NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|OOii", kwlist, 
-           &command, &stop, &start, &opt, &remote, &timeout))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yO|OOii", kwlist, &command,
+                                     &stop, &start, &opt, &remote, &timeout))
         return NULL;
 
     gstart = py_register_conv(start); 
@@ -1712,10 +1674,10 @@ static PyObject *py_command_runsub(PyObject *self, PyObject *args, PyObject *kwd
     PyObject *pserver = Py_None;
     PyObject *pitem = Py_None;
     SERVER_REC *server = NULL;
-    WI_ITEM_REC *item = NULL; 
+    WI_ITEM_REC *item = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss|OO", kwlist, 
-           &cmd, &data, &pserver, &pitem))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy|OO", kwlist, &cmd, &data,
+                                     &pserver, &pitem))
         return NULL;
 
     if (pserver != Py_None && !pyserver_check(pserver))
@@ -1909,11 +1871,24 @@ static PyMethodDef ModuleMethods[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
+static struct PyModuleDef IrssiModuleDef = {
+    PyModuleDef_HEAD_INIT,
+    .m_name    = "_irssi",
+    .m_size    = -1,
+    .m_methods = ModuleMethods,
+};
+
+PyObject *PyInit_IrssiModule(void)
+{
+    py_module = PyModule_Create(&IrssiModuleDef);
+    return py_module;
+}
+
 int pymodule_init(void)
 {
     g_return_val_if_fail(py_module == NULL, 0);
 
-    py_module = Py_InitModule("_irssi", ModuleMethods);
+    PyImport_ImportModule("_irssi");
     if (!py_module)
         return 0;
      

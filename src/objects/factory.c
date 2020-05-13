@@ -181,36 +181,50 @@ static void register_chat(CHAT_PROTOCOL_REC *rec)
 
     /* chat_type == rec->id ??? */
     chat_type = chat_protocol_lookup(rec->name);
-	g_return_if_fail(chat_type >= 0 && chat_type < 0xffff);
+    g_return_if_fail(chat_type >= 0 && chat_type < 0xffff);
 
-    if (!g_strcasecmp(rec->name, "IRC"))
+    if (!g_ascii_strcasecmp(rec->name, "IRC"))
+    {
         is_irc = 1;
-    
-	type = module_get_uniq_id("SERVER", 0);
+    }
+
+    type = module_get_uniq_id("SERVER", 0);
     if (is_irc)
+    {
         insert_map(type, chat_type, (InitFunc)pyirc_server_new);
+    }
     else
+    {
         insert_map(type, chat_type, (InitFunc)pyserver_new);
+    }
 
-	type = module_get_uniq_id("SERVER CONNECT", 0);
+    type = module_get_uniq_id("SERVER CONNECT", 0);
     if (is_irc)
+    {
         insert_map(type, chat_type, (InitFunc)pyirc_connect_new);
+    }
     else
+    {
         insert_map(type, chat_type, (InitFunc)pyconnect_new);
+    }
 
-	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
+    type = module_get_uniq_id_str("WINDOW ITEM TYPE", "CHANNEL");
     if (is_irc)
-        insert_map(type, chat_type, (InitFunc)pyirc_channel_new); 
+    {
+        insert_map(type, chat_type, (InitFunc)pyirc_channel_new);
+    }
     else
+    {
         insert_map(type, chat_type, (InitFunc)pychannel_new);
+    }
 
-	type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
+    type = module_get_uniq_id_str("WINDOW ITEM TYPE", "QUERY");
     insert_map(type, chat_type, (InitFunc)pyquery_new);
 
-	type = module_get_uniq_id("CHATNET", 0);
-    insert_map(type, chat_type, (InitFunc)pychatnet_new); 
+    type = module_get_uniq_id("CHATNET", 0);
+    insert_map(type, chat_type, (InitFunc)pychatnet_new);
 
-	type = module_get_uniq_id("NICK", 0);
+    type = module_get_uniq_id("NICK", 0);
     insert_map(type, chat_type, (InitFunc)pynick_new); 
 }
 

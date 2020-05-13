@@ -50,8 +50,8 @@ static void PyServer_dealloc(PyServer *self)
 
     Py_XDECREF(self->connect);
     Py_XDECREF(self->rawlog);
-    
-    self->ob_type->tp_free((PyObject*)self);
+
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* Getters */
@@ -187,7 +187,7 @@ PyDoc_STRVAR(PyServer_lag_doc,
 static PyObject *PyServer_lag_get(PyServer *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->lag);
+    return PyLong_FromLong(self->data->lag);
 }
 
 static PyGetSetDef PyServer_getseters[] = {
@@ -237,8 +237,9 @@ static PyObject *PyServer_prnt(PyServer *self, PyObject *args, PyObject *kwds)
     int level = MSGLEVEL_CLIENTNOTICE;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss|i", kwlist, &channel, &str, &level))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy|i", kwlist, &channel, &str,
+                                     &level))
         return NULL;
 
     printtext_string(self->data, channel, level, str);
@@ -257,8 +258,8 @@ static PyObject *PyServer_command(PyServer *self, PyObject *args, PyObject *kwds
     char *cmd;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &cmd))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     py_command(cmd, self->data, NULL);
@@ -314,7 +315,7 @@ static PyObject *PyServer_ischannel(PyServer *self, PyObject *args, PyObject *kw
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &data))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &data))
         return NULL;
 
     ret = self->data->ischannel(self->data, data);
@@ -335,7 +336,7 @@ static PyObject *PyServer_get_nick_flags(PyServer *self, PyObject *args)
 
     ret = (char *)self->data->get_nick_flags(self->data);
 
-    return PyString_FromString(ret);
+    return PyBytes_FromString(ret);
 }
 
 PyDoc_STRVAR(send_message_doc,
@@ -351,7 +352,8 @@ static PyObject *PyServer_send_message(PyServer *self, PyObject *args, PyObject 
     
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi", kwlist, &target, &msg, &target_type))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyi", kwlist, &target, &msg,
+                                     &target_type))
         return NULL;
 
     self->data->send_message(self->data, target, msg, target_type);
@@ -376,7 +378,8 @@ static PyObject *PyServer_channels_join(PyServer *self, PyObject *args, PyObject
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &channels, &automatic))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &channels,
+                                     &automatic))
         return NULL;
 
     self->data->channels_join(self->data, channels, automatic);
@@ -396,8 +399,7 @@ static PyObject *PyServer_window_item_find(PyServer *self, PyObject *args, PyObj
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     return py_irssi_chat_new(window_item_find(self->data, name), 1);
@@ -416,8 +418,7 @@ static PyObject *PyServer_window_find_item(PyServer *self, PyObject *args, PyObj
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     win = window_find_item(self->data, name);
@@ -466,8 +467,7 @@ static PyObject *PyServer_window_find_closest(PyServer *self, PyObject *args, Py
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si", kwlist, 
-           &name, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yi", kwlist, &name, &level))
         return NULL;
 
     win = window_find_closest(self->data, name, level);
@@ -501,8 +501,7 @@ static PyObject *PyServer_channel_find(PyServer *self, PyObject *args, PyObject 
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     return py_irssi_chat_new(channel_find(self->data, name), 1);
@@ -523,8 +522,7 @@ static PyObject *PyServer_nicks_get_same(PyServer *self, PyObject *args, PyObjec
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &nick))
         return NULL;
     
     pylist = PyList_New(0);
@@ -582,8 +580,7 @@ static PyObject *PyServer_query_find(PyServer *self, PyObject *args, PyObject *k
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &nick))
         return NULL;
 
     return py_irssi_chat_new(query_find(self->data, nick), 1);
@@ -604,8 +601,8 @@ static PyObject *PyServer_mask_match(PyServer *self, PyObject *args, PyObject *k
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssss", kwlist, 
-           &mask, &nick, &user, &host))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyyy", kwlist, &mask, &nick,
+                                     &user, &host))
         return NULL;
 
     return PyBool_FromLong(mask_match(self->data, mask, nick, user, host));
@@ -625,8 +622,8 @@ static PyObject *PyServer_mask_match_address(PyServer *self, PyObject *args, PyO
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &mask, &nick, &address))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &mask, &nick,
+                                     &address))
         return NULL;
 
     return PyBool_FromLong(mask_match_address(self->data, mask, nick, address));
@@ -647,8 +644,8 @@ static PyObject *PyServer_masks_match(PyServer *self, PyObject *args, PyObject *
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &masks, &nick, &address))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &masks, &nick,
+                                     &address))
         return NULL;
 
     return PyBool_FromLong(masks_match(self->data, masks, nick, address));
@@ -670,8 +667,8 @@ static PyObject *PyServer_ignore_check(PyServer *self, PyObject *args, PyObject 
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssssi", kwlist, 
-           &nick, &host, &channel, &text, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyyyi", kwlist, &nick, &host,
+                                     &channel, &text, &level))
         return NULL;
 
     return PyBool_FromLong(ignore_check(self->data, 
@@ -726,47 +723,16 @@ static PyMethodDef PyServer_methods[] = {
 };
 
 PyTypeObject PyServerType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Server",            /*tp_name*/
-    sizeof(PyServer),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyServer_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyServer objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyServer_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyServer_getseters,        /* tp_getset */
-    &PyIrssiChatBaseType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Server",                           /*tp_name*/
+    .tp_basicsize = sizeof(PyServer),                         /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyServer_dealloc,             /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyServer objects",                       /* tp_doc */
+    .tp_methods   = PyServer_methods,                         /* tp_methods */
+    .tp_getset    = PyServer_getseters,                       /* tp_getset */
+    .tp_base      = &PyIrssiChatBaseType,                     /* tp_base */
 };
-
 
 /* server factory function 
    connect arg should point to a wrapped SERVER_CONNECT */

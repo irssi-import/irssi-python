@@ -238,7 +238,7 @@ static PyObject *py_mkstrlist(void *iobj)
         int ret;
         PyObject *str;
 
-        str = PyString_FromString(node->data);
+        str = PyBytes_FromString(node->data);
         if (!str)
         {
             Py_DECREF(list);
@@ -269,13 +269,13 @@ static PyObject *py_i2py(char code, void *iobj)
             Py_RETURN_NONE;
 
         case 's':
-            return PyString_FromString((char *)iobj);
+            return PyBytes_FromString((char *)iobj);
         case 'u':
             return PyLong_FromUnsignedLong(*(unsigned long*)iobj);
         case 'I':
-            return PyInt_FromLong(*(int *)iobj);
+            return PyLong_FromLong(*(int *)iobj);
         case 'i':
-            return PyInt_FromLong((int)iobj);
+            return PyLong_FromLong(GPOINTER_TO_INT(iobj));
 
         case 'G':
             return py_mkstrlist(iobj);
@@ -335,11 +335,13 @@ static void *py_py2i(char code, PyObject *pobj, int arg, const char *signal)
         /* XXX: string doesn't persist */
         case 's':
             type = "str";
-            if (PyString_Check(pobj)) return PyString_AsString(pobj);
+            if (PyBytes_Check(pobj))
+                return PyBytes_AsString(pobj);
             break;
         case 'i':
             type = "int";
-            if (PyInt_Check(pobj)) return (void*)PyInt_AsLong(pobj);
+            if (PyLong_Check(pobj))
+                return (void *)PyLong_AsLong(pobj);
             break;
 
         case 'L': /* list of nicks */
@@ -444,14 +446,14 @@ static void py_getstrlist(GList **list, PyObject *pylist)
     for (i = 0; i < PyList_Size(pylist); i++)
     {
         str = PyList_GET_ITEM(pylist, i);
-        if (!PyString_Check(str))
+        if (!PyBytes_Check(str))
         {
             PyErr_SetString(PyExc_TypeError, "string list contains invalid elements");
             PyErr_Print();
             return;
         }
 
-        cstr = g_strdup(PyString_AS_STRING(str));
+        cstr = g_strdup(PyBytes_AS_STRING(str));
         out = g_list_append(out, cstr);
     }
 
@@ -512,11 +514,11 @@ static void py_run_handler(PY_SIGNAL_REC *rec, void **args)
                         value = PyTuple_GET_ITEM(ret, j++);
                     else
                         value = ret;
-                   
-                    if (!PyInt_Check(value))
+
+                    if (!PyLong_Check(value))
                         continue;
 
-                    *intarg = PyInt_AS_LONG(value);
+                    *intarg = PyLong_AS_LONG(value);
                 }
                 break;
         }

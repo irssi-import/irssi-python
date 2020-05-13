@@ -65,7 +65,7 @@ static void cmd_exec(const char *data)
     if (!co)
         goto error;
 
-    ret = PyEval_EvalCode((PyCodeObject *)co, d, d);
+    ret = PyEval_EvalCode(co, d, d);
     Py_DECREF(co);
     Py_XDECREF(ret);
 
@@ -145,6 +145,7 @@ static void intr_catch(int sig)
 
 void python_init(void)
 {
+    PyImport_AppendInittab("_irssi", &PyInit_IrssiModule);
     Py_InitializeEx(0);
 
     pysignals_init();

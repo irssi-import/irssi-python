@@ -59,14 +59,15 @@ static PyObject *PyIrcChannel_ban_get_mask(PyIrcChannel *self, PyObject *args, P
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &nick, &ban_type))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &nick,
+                                     &ban_type))
         return NULL;
 
     str = ban_get_mask(self->data, nick, ban_type);
     if (!str)
         Py_RETURN_NONE;
-    
-    ret = PyString_FromString(str);
+
+    ret = PyBytes_FromString(str);
     g_free(str);
 
     return ret;
@@ -86,7 +87,8 @@ static PyObject *PyIrcChannel_banlist_add(PyIrcChannel *self, PyObject *args, Py
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssk", kwlist, &ban, &nick, &btime))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyk", kwlist, &ban, &nick,
+                                     &btime))
         return NULL;
 
     newban = banlist_add(self->data, ban, nick, btime);
@@ -109,7 +111,7 @@ static PyObject *PyIrcChannel_banlist_remove(PyIrcChannel *self, PyObject *args,
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &ban, &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &ban, &nick))
         return NULL;
 
     banlist_remove(self->data, ban, nick);
@@ -130,47 +132,15 @@ static PyMethodDef PyIrcChannel_methods[] = {
 };
 
 PyTypeObject PyIrcChannelType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.IrcChannel",            /*tp_name*/
-    sizeof(PyIrcChannel),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    0,                          /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyIrcChannel objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyIrcChannel_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyIrcChannel_getseters,        /* tp_getset */
-    &PyChannelType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.IrcChannel",                       /*tp_name*/
+    .tp_basicsize = sizeof(PyIrcChannel),                     /*tp_basicsize*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyIrcChannel objects",                   /* tp_doc */
+    .tp_methods   = PyIrcChannel_methods,                     /* tp_methods */
+    .tp_getset    = PyIrcChannel_getseters,                   /* tp_getset */
+    .tp_base      = &PyChannelType,                           /* tp_base */
 };
-
 
 /* irc channel factory function */
 PyObject *pyirc_channel_new(void *chan)

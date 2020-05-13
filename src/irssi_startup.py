@@ -1,4 +1,4 @@
-import sys, imp, __builtin__
+import sys, builtins, importlib
 import _irssi
 
 class Output:
@@ -12,7 +12,7 @@ class Output:
         if '\n' == text[-1]:
             text = ''.join(self.buf)[:-1]
             for line in text.split('\\n'):
-                _irssi.active_win().prnt(line, self.level)
+                _irssi.prnt(line.encode('utf-8'), self.level)
             self.buf = []
 
 sys.stdout = Output(level = _irssi.MSGLEVEL_CLIENTCRAP)

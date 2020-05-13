@@ -47,7 +47,7 @@ static void PyQuery_dealloc(PyQuery *self)
 
     Py_XDECREF(self->server);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* Getters */
@@ -121,47 +121,16 @@ static PyMethodDef PyQuery_methods[] = {
 };
 
 PyTypeObject PyQueryType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Query",            /*tp_name*/
-    sizeof(PyQuery),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyQuery_dealloc,    /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyQuery objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyQuery_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyQuery_getseters,        /* tp_getset */
-    &PyWindowItemType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Query",                            /*tp_name*/
+    .tp_basicsize = sizeof(PyQuery),                          /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyQuery_dealloc,              /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyQuery objects",                        /* tp_doc */
+    .tp_methods   = PyQuery_methods,                          /* tp_methods */
+    .tp_getset    = PyQuery_getseters,                        /* tp_getset */
+    .tp_base      = &PyWindowItemType,                        /* tp_base */
 };
-
 
 /* query factory function */
 PyObject *pyquery_new(void *query)

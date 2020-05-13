@@ -41,8 +41,8 @@ static void PyTheme_dealloc(PyTheme *self)
 {
     if (self->cleanup_installed)
         signal_remove_data("theme destroyed", theme_cleanup, self);
-    
-    self->ob_type->tp_free((PyObject*)self);
+
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyTheme_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -76,8 +76,8 @@ static PyObject *PyTheme_format_expand(PyTheme *self, PyObject *args, PyObject *
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, 
-           &format, &flags))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &format,
+                                     &flags))
         return NULL;
 
     if (flags == 0)
@@ -91,7 +91,7 @@ static PyObject *PyTheme_format_expand(PyTheme *self, PyObject *args, PyObject *
 
     if (ret)
     {
-        pyret = PyString_FromString(ret);
+        pyret = PyBytes_FromString(ret);
         g_free(ret);
         return pyret;
     }
@@ -114,8 +114,7 @@ static PyObject *PyTheme_get_format(PyTheme *self, PyObject *args, PyObject *kwd
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &module, &tag))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &module, &tag))
         return NULL;
 
     formats = g_hash_table_lookup(default_formats, module);
@@ -124,13 +123,13 @@ static PyObject *PyTheme_get_format(PyTheme *self, PyObject *args, PyObject *kwd
 
     for (i = 0; formats[i].def; i++)
     {
-        if (formats[i].tag && !g_strcasecmp(formats[i].tag, tag))
+        if (formats[i].tag && !g_ascii_strcasecmp(formats[i].tag, tag))
         { 
             modtheme = g_hash_table_lookup(theme->modules, module);
             if (modtheme && modtheme->formats[i])
-                return PyString_FromString(modtheme->formats[i]);
-            else 
-                return PyString_FromString(formats[i].def);
+                return PyBytes_FromString(modtheme->formats[i]);
+            else
+                return PyBytes_FromString(formats[i].def);
         }
     }
    
@@ -147,45 +146,14 @@ static PyMethodDef PyTheme_methods[] = {
 };
 
 PyTypeObject PyThemeType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Theme",            /*tp_name*/
-    sizeof(PyTheme),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyTheme_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    0,           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyTheme_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyTheme_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyTheme_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Theme",                            /*tp_name*/
+    .tp_basicsize = sizeof(PyTheme),                          /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyTheme_dealloc,              /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_methods   = PyTheme_methods,                          /* tp_methods */
+    .tp_getset    = PyTheme_getseters,                        /* tp_getset */
+    .tp_new       = PyTheme_new,                              /* tp_new */
 };
 
 /* Theme factory function */

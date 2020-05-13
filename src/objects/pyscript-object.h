@@ -27,7 +27,6 @@ void pyscript_clear_modules(PyObject *script);
 void pyscript_cleanup(PyObject *script);
 #define pyscript_check(op) PyObject_TypeCheck(op, &PyScriptType)
 #define pyscript_get_name(scr) PyModule_GetName(((PyScript*)scr)->module)
-#define pyscript_get_filename(scr) PyModule_GetFilename(((PyScript*)scr)->module)
 #define pyscript_get_module(scr) (((PyScript*)scr)->module)
 
 #endif

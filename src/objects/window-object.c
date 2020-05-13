@@ -42,9 +42,9 @@ static void window_cleanup(WINDOW_REC *win)
 static void PyWindow_dealloc(PyWindow *self)
 {
     if (self->cleanup_installed)
-        signal_remove_data("window destroyed", window_cleanup, self); 
+        signal_remove_data("window destroyed", window_cleanup, self);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyWindow_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -65,7 +65,7 @@ PyDoc_STRVAR(PyWindow_refnum_doc,
 static PyObject *PyWindow_refnum_get(PyWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->refnum);
+    return PyLong_FromLong(self->data->refnum);
 }
 
 PyDoc_STRVAR(PyWindow_name_doc,
@@ -83,7 +83,7 @@ PyDoc_STRVAR(PyWindow_width_doc,
 static PyObject *PyWindow_width_get(PyWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->width);
+    return PyLong_FromLong(self->data->width);
 }
 
 PyDoc_STRVAR(PyWindow_height_doc,
@@ -92,7 +92,7 @@ PyDoc_STRVAR(PyWindow_height_doc,
 static PyObject *PyWindow_height_get(PyWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->height);
+    return PyLong_FromLong(self->data->height);
 }
 
 PyDoc_STRVAR(PyWindow_history_name_doc,
@@ -139,7 +139,7 @@ PyDoc_STRVAR(PyWindow_level_doc,
 static PyObject *PyWindow_level_get(PyWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->level);
+    return PyLong_FromLong(self->data->level);
 }
 
 PyDoc_STRVAR(PyWindow_sticky_refnum_doc,
@@ -157,7 +157,7 @@ PyDoc_STRVAR(PyWindow_data_level_doc,
 static PyObject *PyWindow_data_level_get(PyWindow *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->data_level);
+    return PyLong_FromLong(self->data->data_level);
 }
 
 PyDoc_STRVAR(PyWindow_hilight_color_doc,
@@ -256,8 +256,7 @@ static PyObject *PyWindow_prnt(PyWindow *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, 
-           &str, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &str, &level))
         return NULL;
 
     printtext_string_window(self->data, level, str);
@@ -278,8 +277,7 @@ static PyObject *PyWindow_command(PyWindow *self, PyObject *args, PyObject *kwds
     
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &cmd))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     old = active_win;
@@ -477,8 +475,7 @@ static PyObject *PyWindow_set_name(PyWindow *self, PyObject *args, PyObject *kwd
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     window_set_name(self->data, name);
@@ -498,8 +495,7 @@ static PyObject *PyWindow_set_history(PyWindow *self, PyObject *args, PyObject *
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &history))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &history))
         return NULL;
 
     window_set_history(self->data, history);
@@ -574,8 +570,7 @@ static PyObject *PyWindow_item_find(PyWindow *self, PyObject *args, PyObject *kw
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os", kwlist, 
-           &server, &name))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Oy", kwlist, &server, &name))
         return NULL;
 
     if (!pyserver_check(server))
@@ -626,47 +621,16 @@ static PyMethodDef PyWindow_methods[] = {
 };
 
 PyTypeObject PyWindowType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Window",            /*tp_name*/
-    sizeof(PyWindow),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyWindow_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyWindow objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyWindow_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyWindow_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyWindow_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Window",                           /*tp_name*/
+    .tp_basicsize = sizeof(PyWindow),                         /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyWindow_dealloc,             /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyWindow objects",                       /* tp_doc */
+    .tp_methods   = PyWindow_methods,                         /* tp_methods */
+    .tp_getset    = PyWindow_getseters,                       /* tp_getset */
+    .tp_new       = PyWindow_new,                             /* tp_new */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pywindow_new(void *win)

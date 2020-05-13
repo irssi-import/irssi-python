@@ -39,10 +39,10 @@ static LOG_ITEM_REC *find_item(LOG_REC *log, PyLogitem *item)
     if (!item->type || !item->name)
         return NULL;
 
-    type = PyInt_AS_LONG(item->type);
-    name = PyString_AS_STRING(item->name);
+    type = PyLong_AS_LONG(item->type);
+    name = PyBytes_AS_STRING(item->name);
     if (item->servertag)
-        servertag = PyString_AS_STRING(item->servertag);
+        servertag = PyBytes_AS_STRING(item->servertag);
 
     return log_item_find(log, type, name, servertag);
 }
@@ -70,8 +70,8 @@ static void PyLog_dealloc(PyLog *self)
         printtext(NULL, NULL, MSGLEVEL_CRAP, "destroying orphan log %s", self->data->fname);
         log_close(self->data);
     }
-    
-    self->ob_type->tp_free((PyObject*)self);
+
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyLog_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -99,8 +99,7 @@ static int PyLog_init(PyLog *self, PyObject *args, PyObject *kwds)
 
     static char *kwlist[] = {"fname", "level", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist,
-            &fname, &level))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|i", kwlist, &fname, &level))
         return -1;
 
     /*XXX: anything better than RuntimeError ? */
@@ -158,7 +157,7 @@ PyDoc_STRVAR(PyLog_level_doc,
 static PyObject *PyLog_level_get(PyLog *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(self->data->level);
+    return PyLong_FromLong(self->data->level);
 }
 
 PyDoc_STRVAR(PyLog_last_doc,
@@ -331,8 +330,8 @@ static PyObject *PyLog_item_add(PyLog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", kwlist, 
-           &item, &servertag, &type, &target, &window))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|ziii", kwlist, &item,
+                                     &servertag, &type, &target, &window))
         return NULL;
 
     if (!logtype(&type, target, window))
@@ -389,8 +388,8 @@ static PyObject *PyLog_item_find(PyLog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|ziii", kwlist, 
-           &item, &server, &type, &target, &window))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y|ziii", kwlist, &item,
+                                     &server, &type, &target, &window))
         return NULL;
 
     if (!logtype(&type, target, window))
@@ -425,47 +424,17 @@ static PyMethodDef PyLog_methods[] = {
 };
 
 PyTypeObject PyLogType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Log",            /*tp_name*/
-    sizeof(PyLog),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyLog_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    PyLog_doc,           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyLog_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyLog_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)PyLog_init,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyLog_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Log",                              /*tp_name*/
+    .tp_basicsize = sizeof(PyLog),                            /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyLog_dealloc,                /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = PyLog_doc,                                /* tp_doc */
+    .tp_methods   = PyLog_methods,                            /* tp_methods */
+    .tp_getset    = PyLog_getseters,                          /* tp_getset */
+    .tp_init      = (initproc)PyLog_init,                     /* tp_init */
+    .tp_new       = PyLog_new,                                /* tp_new */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pylog_new(void *log)

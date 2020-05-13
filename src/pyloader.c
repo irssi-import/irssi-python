@@ -42,7 +42,7 @@ void pyloader_add_script_path(const char *path)
     PyObject *ppath = PySys_GetObject("path");
     if (ppath)
     {
-        PyList_Append(ppath, PyString_FromString(path));
+        PyList_Append(ppath, PyUnicode_FromString(path));
         script_paths = g_slist_append(script_paths, g_strdup(path));
     }
 }
@@ -50,7 +50,7 @@ void pyloader_add_script_path(const char *path)
 /* Loads a file into a module; it is not inserted into sys.modules */
 static int py_load_module(PyObject *module, const char *path) 
 {
-    PyObject *dict, *ret, *fp;
+    PyObject *dict, *ret;
 
     if (PyModule_AddStringConstant(module, "__file__", (char *)path) < 0)
         return 0;
@@ -60,14 +60,7 @@ static int py_load_module(PyObject *module, const char *path)
     if (PyDict_SetItemString(dict, "__builtins__", PyEval_GetBuiltins()) < 0)
         return 0;
 
-    /* Dont use the standard library to avoid incompatabilities with 
-       the FILE structure and Python */
-    fp = PyFile_FromString((char *)path, "r");
-    if (!fp)
-        return 0;
-
-    ret = PyRun_File(PyFile_AsFile(fp), path, Py_file_input, dict, dict);
-    Py_DECREF(fp);  /* XXX: I assume that the file is closed when refs drop to zero? */ 
+    ret = PyRun_FileEx(fopen(path, "r"), path, Py_file_input, dict, dict, TRUE);
     if (!ret)
         return 0;
 
@@ -222,7 +215,7 @@ static PyObject *py_get_script(const char *name, int *id)
     for (i = 0; i < PyList_Size(script_modules); i++)
     {
         PyObject *script;
-        char *sname;
+        const char *sname;
 
         script = PyList_GET_ITEM(script_modules, i);
         sname = pyscript_get_name(script);
@@ -283,8 +276,8 @@ PyObject *pyloader_find_script_obj(void)
         {
             /*
             PySys_WriteStdout("Found script at %s in %s, script -> 0x%x\n",
-                    PyString_AS_STRING(frame->f_code->co_name), 
-                    PyString_AS_STRING(frame->f_code->co_filename), script);
+                    PyBytes_AS_STRING(frame->f_code->co_name),
+                    PyBytes_AS_STRING(frame->f_code->co_filename), script);
             */
             return script;
         }
@@ -293,7 +286,7 @@ PyObject *pyloader_find_script_obj(void)
     return NULL;
 }
 
-char *pyloader_find_script_name(void)
+const char *pyloader_find_script_name(void)
 {
     PyObject *script = pyloader_find_script_obj();
 
@@ -301,6 +294,18 @@ char *pyloader_find_script_name(void)
         return NULL;
 
     return pyscript_get_name(script);
+}
+
+const char *pyscript_get_filename(PyObject *m)
+{
+    PyObject *fileobj;
+    const char *utf8;
+    fileobj = PyModule_GetFilenameObject(pyscript_get_module(m));
+    if (fileobj == NULL)
+        return NULL;
+    utf8 = PyUnicode_AsUTF8(fileobj);
+    Py_DECREF(fileobj);
+    return utf8;
 }
 
 GSList *pyloader_list(void)
@@ -313,7 +318,7 @@ GSList *pyloader_list(void)
     for (i = 0; i < PyList_Size(script_modules); i++)
     {
         PyObject *scr;
-        char *name, *file;
+        const char *name, *file;
 
         scr = PyList_GET_ITEM(script_modules, i);
         name = pyscript_get_name(scr);

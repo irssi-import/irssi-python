@@ -21,8 +21,8 @@
 #include <string.h>
 #include "pyirssi.h"
 #include "pyutils.h"
-#include "settings.h"
-#include "servers.h"
+#include <irssi/src/core/settings.h>
+#include <irssi/src/core/servers.h>
 
 /* copy paste from perl bindings */
 void py_command(const char *cmd, SERVER_REC *server, WI_ITEM_REC *item)

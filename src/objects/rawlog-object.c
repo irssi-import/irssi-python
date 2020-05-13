@@ -29,14 +29,16 @@
 #endif
 
 /* monitor "????" signal */
+/*
 static void rawlog_cleanup(RAWLOG_REC *ban)
 {
-    /* XXX */
+    \/\* XXX \*\/
 }
+*/
 
 static void PyRawlog_dealloc(PyRawlog *self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyRawlog_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -68,11 +70,11 @@ PyDoc_STRVAR(PyRawlog_nlines_doc,
 static PyObject *PyRawlog_nlines_get(PyRawlog *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(
+    return PyLong_FromLong(
 #ifdef RAWLOG18
-	self->data->lines->length
+        self->data->lines->length
 #else
-	self->data->nlines
+        self->data->nlines
 #endif
     );
 }
@@ -95,7 +97,11 @@ PyDoc_STRVAR(PyRawlog_get_lines_doc,
 static PyObject *PyRawlog_get_lines(PyRawlog *self, PyObject *args)
 {
     PyObject *lines = NULL;
+#ifdef RAWLOG18
+    GList *node;
+#else
     GSList *node;
+#endif
 
     RET_NULL_IF_INVALID(self->data);
     
@@ -113,7 +119,7 @@ static PyObject *PyRawlog_get_lines(PyRawlog *self, PyObject *args)
 	 node; node = node->next)
     {
         int ret;
-        PyObject *line = PyString_FromString(node->data);
+        PyObject *line = PyBytes_FromString(node->data);
 
         if (!line)
         {
@@ -162,8 +168,7 @@ static PyObject *PyRawlog_input(PyRawlog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &str))
         return NULL;
 
     rawlog_input(self->data, str);
@@ -183,8 +188,7 @@ static PyObject *PyRawlog_output(PyRawlog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &str))
         return NULL;
 
     rawlog_output(self->data, str);
@@ -204,8 +208,7 @@ static PyObject *PyRawlog_redirect(PyRawlog *self, PyObject *args, PyObject *kwd
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &str))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &str))
         return NULL;
 
     rawlog_redirect(self->data, str);
@@ -225,8 +228,7 @@ static PyObject *PyRawlog_open(PyRawlog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &fname))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &fname))
         return NULL;
 
     rawlog_open(self->data, fname);
@@ -260,8 +262,7 @@ static PyObject *PyRawlog_save(PyRawlog *self, PyObject *args, PyObject *kwds)
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &fname))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &fname))
         return NULL;
 
     rawlog_save(self->data, fname);
@@ -290,47 +291,16 @@ static PyMethodDef PyRawlog_methods[] = {
 };
 
 PyTypeObject PyRawlogType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Rawlog",            /*tp_name*/
-    sizeof(PyRawlog),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyRawlog_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyRawlog objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyRawlog_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyRawlog_getseters,        /* tp_getset */
-    0,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    PyRawlog_new,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Rawlog",                           /*tp_name*/
+    .tp_basicsize = sizeof(PyRawlog),                         /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyRawlog_dealloc,             /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyRawlog objects",                       /* tp_doc */
+    .tp_methods   = PyRawlog_methods,                         /* tp_methods */
+    .tp_getset    = PyRawlog_getseters,                       /* tp_getset */
+    .tp_new       = PyRawlog_new,                             /* tp_new */
 };
-
 
 /* window item wrapper factory function */
 PyObject *pyrawlog_new(void *rlog)

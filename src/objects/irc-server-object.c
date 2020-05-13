@@ -82,7 +82,7 @@ static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args)
     RET_NULL_IF_INVALID(self->data);
 
     list = irc_server_get_channels(self->data);
-    ret = PyString_FromString(list);
+    ret  = PyBytes_FromString(list);
     g_free(list);
 
     return ret;
@@ -100,8 +100,8 @@ static PyObject *PyIrcServer_send_raw(PyIrcServer *self, PyObject *args, PyObjec
     char *cmd;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &cmd))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     irc_send_cmd(self->data, cmd);
@@ -120,8 +120,8 @@ static PyObject *PyIrcServer_send_raw_now(PyIrcServer *self, PyObject *args, PyO
     char *cmd;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &cmd))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &cmd))
         return NULL;
 
     irc_send_cmd_now(self->data, cmd);
@@ -149,8 +149,9 @@ static PyObject *PyIrcServer_send_raw_split(PyIrcServer *self, PyObject *args, P
     int max_nicks;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sii", kwlist, &cmd, &nickarg, &max_nicks))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yii", kwlist, &cmd, &nickarg,
+                                     &max_nicks))
         return NULL;
 
     irc_send_cmd_split(self->data, cmd, nickarg, max_nicks);
@@ -172,8 +173,8 @@ static PyObject *PyIrcServer_ctcp_send_reply(PyIrcServer *self, PyObject *args, 
     char *data;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &data))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &data))
         return NULL;
 
     ctcp_send_reply(self->data, data);
@@ -198,8 +199,8 @@ static PyObject *PyIrcServer_isupport(PyIrcServer *self, PyObject *args, PyObjec
     char *found;
 
     RET_NULL_IF_INVALID(self->data);
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name))
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &name))
         return NULL;
 
     found = g_hash_table_lookup(self->data->isupport, name);
@@ -222,8 +223,7 @@ static PyObject *PyIrcServer_netsplit_find(PyIrcServer *self, PyObject *args, Py
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, 
-           &nick, &address))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yy", kwlist, &nick, &address))
         return NULL;
 
     ns = netsplit_find(self->data, nick, address);
@@ -248,8 +248,8 @@ static PyObject *PyIrcServer_netsplit_find_channel(PyIrcServer *self, PyObject *
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &nick, &address, &channel))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &nick, &address,
+                                     &channel))
         return NULL;
 
     nsc = netsplit_find_channel(self->data, nick, address, channel);
@@ -271,8 +271,7 @@ static PyObject *PyIrcServer_notifylist_ison(PyIrcServer *self, PyObject *args, 
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, 
-           &nick))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &nick))
         return NULL;
 
     return PyBool_FromLong(notifylist_ison_server(self->data, nick));
@@ -371,8 +370,9 @@ static PyObject *PyIrcServer_redirect_event(PyIrcServer *self, PyObject *args, P
     
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|ziiz", kwlist, 
-           &command, &signals, &arg, &count, &remote, &failure_signal))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yO|ziiz", kwlist, &command,
+                                     &signals, &arg, &count, &remote,
+                                     &failure_signal))
         return NULL;
 
     gsignals = py_event_conv(signals);
@@ -396,8 +396,8 @@ static PyObject *PyIrcServer_redirect_get_signal(PyIrcServer *self, PyObject *ar
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &prefix, &event, &pargs))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &prefix, &event,
+                                     &pargs))
         return NULL;
 
     RET_AS_STRING_OR_NONE(server_redirect_get_signal(self->data, prefix, event, pargs));
@@ -416,8 +416,8 @@ static PyObject *PyIrcServer_redirect_peek_signal(PyIrcServer *self, PyObject *a
 
     RET_NULL_IF_INVALID(self->data);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sss", kwlist, 
-           &prefix, &event, &pargs))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "yyy", kwlist, &prefix, &event,
+                                     &pargs))
         return NULL;
 
     RET_AS_STRING_OR_NONE(server_redirect_peek_signal(self->data, prefix, event, pargs, &redirection));
@@ -453,45 +453,14 @@ static PyMethodDef PyIrcServer_methods[] = {
 };
 
 PyTypeObject PyIrcServerType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.IrcServer",            /*tp_name*/
-    sizeof(PyIrcServer),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    0,                         /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyIrcServer objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyIrcServer_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyIrcServer_getseters,        /* tp_getset */
-    &PyServerType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.IrcServer",                        /*tp_name*/
+    .tp_basicsize = sizeof(PyIrcServer),                      /*tp_basicsize*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyIrcServer objects",                    /* tp_doc */
+    .tp_methods   = PyIrcServer_methods,                      /* tp_methods */
+    .tp_getset    = PyIrcServer_getseters,                    /* tp_getset */
+    .tp_base      = &PyServerType,                            /* tp_base */
 };
 
 PyObject *pyirc_server_new(void *server)

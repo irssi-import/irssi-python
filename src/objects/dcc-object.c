@@ -47,7 +47,7 @@ static void PyDcc_dealloc(PyDcc *self)
     Py_XDECREF(self->server);
     Py_XDECREF(self->chat);
 
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* Getters */
@@ -151,7 +151,7 @@ PyDoc_STRVAR(PyDcc_port_doc,
 static PyObject *PyDcc_port_get(PyDcc *self, void *closure)
 {
     RET_NULL_IF_INVALID(self->data);
-    return PyInt_FromLong(DCC(self->data)->port);
+    return PyLong_FromLong(DCC(self->data)->port);
 }
 
 PyDoc_STRVAR(PyDcc_starttime_doc,
@@ -268,47 +268,16 @@ static PyMethodDef PyDcc_methods[] = {
 };
 
 PyTypeObject PyDccType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-    "irssi.Dcc",            /*tp_name*/
-    sizeof(PyDcc),             /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)PyDcc_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-    "PyDcc objects",           /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    PyDcc_methods,             /* tp_methods */
-    0,                      /* tp_members */
-    PyDcc_getseters,        /* tp_getset */
-    &PyIrssiBaseType,          /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,      /* tp_init */
-    0,                         /* tp_alloc */
-    0,                 /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "irssi.Dcc",                              /*tp_name*/
+    .tp_basicsize = sizeof(PyDcc),                            /*tp_basicsize*/
+    .tp_dealloc   = (destructor)PyDcc_dealloc,                /*tp_dealloc*/
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    .tp_doc       = "PyDcc objects",                          /* tp_doc */
+    .tp_methods   = PyDcc_methods,                            /* tp_methods */
+    .tp_getset    = PyDcc_getseters,                          /* tp_getset */
+    .tp_base      = &PyIrssiBaseType,                         /* tp_base */
 };
-
 
 /* Dcc factory function */
 PyObject *pydcc_sub_new(void *dcc, const char *name, PyTypeObject *subclass)
