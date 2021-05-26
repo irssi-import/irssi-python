@@ -74,14 +74,24 @@ PyDoc_STRVAR(get_channels_doc,
     "Return a string of all channels (and keys, if any have them) in server,\n"
     "like '#a,#b,#c,#d x,b_chan_key,x,x' or just '#e,#f,#g'\n"
 );
-static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args)
+static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
+    static char *kwlist[] = {"rejoin_channels_mode", NULL};
+    char *rejoin_channels_mode = NULL;
     char *list;
     PyObject *ret;
+    SETTINGS_REC *setting;
+    int mode;
 
     RET_NULL_IF_INVALID(self->data);
 
-    list = irc_server_get_channels(self->data);
+    PyArg_ParseTupleAndKeywords(args, kwds, "y", kwlist, &rejoin_channels_mode);
+    setting = settings_get_record("rejoin_channels_on_reconnect");
+    mode = strarray_find(setting->choices, rejoin_channels_mode);
+    if (mode < 0)
+	mode = setting->default_value.v_int;
+
+    list = irc_server_get_channels(self->data, mode);
     ret  = PyBytes_FromString(list);
     g_free(list);
 
@@ -425,7 +435,7 @@ static PyObject *PyIrcServer_redirect_peek_signal(PyIrcServer *self, PyObject *a
 
 /* Methods for object */
 static PyMethodDef PyIrcServer_methods[] = {
-    {"get_channels", (PyCFunction)PyIrcServer_get_channels, METH_NOARGS,
+    {"get_channels", (PyCFunction)PyIrcServer_get_channels, METH_VARARGS | METH_KEYWORDS,
         get_channels_doc},
     {"send_raw", (PyCFunction)PyIrcServer_send_raw, METH_VARARGS | METH_KEYWORDS, 
         send_raw_doc},
