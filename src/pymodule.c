@@ -1635,7 +1635,7 @@ static PyObject *py_server_redirect_register(PyObject *self, PyObject *args, PyO
     if (PyErr_Occurred())
         goto error;
 
-    server_redirect_register_list(command, remote, timeout, gstart, gstop, gopt);
+    server_redirect_register_list(command, remote, timeout, gstart, gstop, gopt, 1);
 
     Py_RETURN_NONE;
 
