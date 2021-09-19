@@ -28,6 +28,10 @@
 #include "pythemes.h"
 #include "pystatusbar.h"
 
+#if !defined(IRSSI_ABI_VERSION) || IRSSI_ABI_VERSION < 32
+#define i_slist_find_icase_string gslist_find_icase_string
+#endif
+
 /* handle cycles...
    Can't think of any reason why the user would put script into one of the lists
    but who knows. Call GC after unloading module.
@@ -372,7 +376,7 @@ static int py_settings_add(PyScript *self, const char *name)
 {
     GSList *node;
 
-    node = gslist_find_icase_string(self->settings, name);
+    node = i_slist_find_icase_string(self->settings, name);
     if (node)
         return 0;
 
@@ -385,7 +389,7 @@ static int py_settings_remove(PyScript *self, const char *name)
 {
     GSList *node;
 
-    node = gslist_find_icase_string(self->settings, name);
+    node = i_slist_find_icase_string(self->settings, name);
     if (!node)
         return 0;
   
