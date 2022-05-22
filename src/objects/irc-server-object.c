@@ -74,6 +74,21 @@ PyDoc_STRVAR(get_channels_doc,
     "Return a string of all channels (and keys, if any have them) in server,\n"
     "like '#a,#b,#c,#d x,b_chan_key,x,x' or just '#e,#f,#g'\n"
 );
+#if !defined(IRSSI_ABI_VERSION) || IRSSI_ABI_VERSION < 36 /* Irssi < 1.3 */
+static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args)
+{
+    char *list;
+    PyObject *ret;
+
+    RET_NULL_IF_INVALID(self->data);
+
+    list = irc_server_get_channels(self->data);
+    ret  = PyBytes_FromString(list);
+    g_free(list);
+
+    return ret;
+}
+#else
 static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"rejoin_channels_mode", NULL};
@@ -97,6 +112,7 @@ static PyObject *PyIrcServer_get_channels(PyIrcServer *self, PyObject *args, PyO
 
     return ret;
 }
+#endif
 
 PyDoc_STRVAR(send_raw_doc,
     "send_raw(cmd) -> None\n"
@@ -435,8 +451,13 @@ static PyObject *PyIrcServer_redirect_peek_signal(PyIrcServer *self, PyObject *a
 
 /* Methods for object */
 static PyMethodDef PyIrcServer_methods[] = {
+#if !defined(IRSSI_ABI_VERSION) || IRSSI_ABI_VERSION < 36 /* Irssi < 1.3 */
+    {"get_channels", (PyCFunction)PyIrcServer_get_channels, METH_NOARGS,
+        get_channels_doc},
+#else
     {"get_channels", (PyCFunction)PyIrcServer_get_channels, METH_VARARGS | METH_KEYWORDS,
         get_channels_doc},
+#endif
     {"send_raw", (PyCFunction)PyIrcServer_send_raw, METH_VARARGS | METH_KEYWORDS, 
         send_raw_doc},
     {"send_raw_now", (PyCFunction)PyIrcServer_send_raw_now, METH_VARARGS | METH_KEYWORDS, 

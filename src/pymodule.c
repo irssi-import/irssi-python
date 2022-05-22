@@ -1635,7 +1635,11 @@ static PyObject *py_server_redirect_register(PyObject *self, PyObject *args, PyO
     if (PyErr_Occurred())
         goto error;
 
+#if !defined(IRSSI_ABI_VERSION) || IRSSI_ABI_VERSION < 35 /* Irssi < 1.3 */
+    server_redirect_register_list(command, remote, timeout, gstart, gstop, gopt);
+#else
     server_redirect_register_list(command, remote, timeout, gstart, gstop, gopt, 1);
+#endif
 
     Py_RETURN_NONE;
 
