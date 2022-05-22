@@ -14,6 +14,8 @@ class Output:
             for line in text.split('\\n'):
                 _irssi.prnt(line.encode('utf-8'), self.level)
             self.buf = []
+    def flush(self):
+        self.write('\n')
 
 sys.stdout = Output(level = _irssi.MSGLEVEL_CLIENTCRAP)
 sys.stderr = Output(level = _irssi.MSGLEVEL_CLIENTERROR)
