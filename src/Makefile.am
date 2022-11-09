@@ -1,4 +1,4 @@
-moduledir = $(libdir)/irssi/modules
+moduledir = $(IRSSI_MODULEDIR)
 wrappersdir = $(datadir)/irssi/scripts
 module_LTLIBRARIES = libpython.la
 
