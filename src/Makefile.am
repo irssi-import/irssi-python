@@ -19,6 +19,9 @@ libpython_la_SOURCES = \
 	pysource.c \
 	pythemes.c \
 	pystatusbar.c \
+	$(BUILT_SRC)
+
+BUILT_SRC = \
 	pyconstants.c
 
 noinst_HEADERS = \
@@ -40,8 +43,11 @@ EXTRA_DIST = $(wrappers_DATA)
 
 SUBDIRS = objects
 
+CLEANFILES = \
+	$(BUILT_SRC)
+
 signalmap:
 	awk -f sig2code.awk $(IRSSI_DIST)/docs/signals.txt > pysigmap.h
 
-constants:
-	awk -f constants.awk constants.txt > pyconstants.c
+pyconstants.c:
+	awk -f constants.awk constants.txt > $@
