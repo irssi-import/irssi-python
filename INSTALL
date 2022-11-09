@@ -20,7 +20,6 @@ Configure & Compile
 -------------------
 
 $ ./configure --with-irssi=PATH/TO/irssi-sources
-$ make -C src constants
 $ make
 
 as root
