@@ -16,7 +16,7 @@ AC_PROG_MAKE_SET
 
 # Checks for libraries.
 PKG_CHECK_MODULES([PYTHON], [python3-embed])
-PKG_CHECK_MODULES([IRSSI], [irssi-1])
+PKG_CHECK_MODULES([IRSSI], [irssi-1 >= 1.4.2])
 AM_PATH_GLIB_2_0(2.0.0) 
 
 # Checks for header files.
@@ -34,6 +34,10 @@ AC_CHECK_FUNCS([memset strchr strrchr])
 IRSSI_PYTHON_INCLUDES="${PYTHON_CFLAGS} ${IRSSI_CFLAGS}"
 
 AC_SUBST([IRSSI_PYTHON_INCLUDES])
+
+IRSSI_MODULEDIR=$( $PKG_CONFIG --variable=irssimoduledir irssi-1 )
+
+AC_SUBST([IRSSI_MODULEDIR])
 
 dnl * gcc specific options
 if test "x$ac_cv_prog_gcc" = "xyes"; then
