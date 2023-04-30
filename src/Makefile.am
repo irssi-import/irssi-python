@@ -19,6 +19,9 @@ libpython_la_SOURCES = \
 	pysource.c \
 	pythemes.c \
 	pystatusbar.c \
+	$(BUILT_SRC)
+
+BUILT_SRC = \
 	pyconstants.c
 
 noinst_HEADERS = \
@@ -28,20 +31,27 @@ noinst_HEADERS = \
 	pyirssi_irc.h \
 	pyloader.h \
 	pymodule.h \
-	pysigmap.h \
 	pysignals.h \
 	pysource.h \
 	pystatusbar.h \
 	pythemes.h \
-	pyutils.h
+	pyutils.h \
+	$(BUILT_HDR)
+
+BUILT_HDR = \
+	pysigmap.h
 
 wrappers_DATA = irssi.py irssi_startup.py
 EXTRA_DIST = $(wrappers_DATA)
 
 SUBDIRS = objects
 
-signalmap:
-	awk -f sig2code.awk $(IRSSI_DIST)/docs/signals.txt > pysigmap.h
+CLEANFILES = \
+	$(BUILT_SRC) \
+	$(BUILT_HDR)
 
-constants:
-	awk -f constants.awk constants.txt > pyconstants.c
+pysigmap.h:
+	awk -f sig2code.awk $(IRSSI_SIGNALSFILE) > $@
+
+pyconstants.c:
+	awk -f constants.awk constants.txt > $@
