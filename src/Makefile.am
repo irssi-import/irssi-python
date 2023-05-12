@@ -55,3 +55,5 @@ pysigmap.h:
 
 pyconstants.c:
 	awk -f constants.awk constants.txt > $@
+
+pysignals.c: pysigmap.h
