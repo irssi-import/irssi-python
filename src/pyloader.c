@@ -309,9 +309,11 @@ PyObject *pyloader_find_script_obj(void)
 
         oldframe = frame;
         frame = PyFrame_GetBack(oldframe);
+        Py_XDECREF(globals);
         Py_XDECREF(oldframe);
     }
 
+    Py_XDECREF(frame);
     return NULL;
 }
 
