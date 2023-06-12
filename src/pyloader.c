@@ -257,20 +257,43 @@ int pyloader_unload_script(const char *name)
     PyGC_Collect();
     printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "unloaded script %s", name); 
     
-    return 1; 
+    return 1;
 }
+
+#if PY_VERSION_HEX < 0x030900B1
+static inline PyFrameObject* PyFrame_GetBack(PyFrameObject *frame)
+{
+    Py_XINCREF(frame->f_back);
+    return frame->f_back;
+}
+#endif
+
+#if PY_VERSION_HEX < 0x030B00A7
+static inline PyObject* PyFrame_GetGlobals(PyFrameObject *frame)
+{
+    return Py_NewRef(frame->f_globals);
+}
+#endif
 
 /* Traverse stack backwards to find the nearest valid _script object in globals */
 PyObject *pyloader_find_script_obj(void)
 {
     PyFrameObject *frame;
 
-    for (frame = PyEval_GetFrame(); frame != NULL; frame = frame->f_back)
-    {
-        PyObject *script;
+    frame = PyEval_GetFrame();
+    Py_XINCREF(frame);
 
-        g_return_val_if_fail(frame->f_globals != NULL, NULL);
-        script = PyDict_GetItemString(frame->f_globals, "_script");
+    while (frame != NULL)
+    {
+        PyFrameObject *oldframe;
+        PyObject *script, *globals;
+
+        globals = PyFrame_GetGlobals(frame);
+        if (globals == NULL) {
+            Py_XDECREF(frame);
+            g_return_val_if_reached(NULL);
+        }
+        script = PyDict_GetItemString(globals, "_script");
 
         if (script && pyscript_check(script))
         {
@@ -279,10 +302,18 @@ PyObject *pyloader_find_script_obj(void)
                     PyBytes_AS_STRING(frame->f_code->co_name),
                     PyBytes_AS_STRING(frame->f_code->co_filename), script);
             */
+            Py_XDECREF(globals);
+            Py_XDECREF(frame);
             return script;
         }
+
+        oldframe = frame;
+        frame = PyFrame_GetBack(oldframe);
+        Py_XDECREF(globals);
+        Py_XDECREF(oldframe);
     }
 
+    Py_XDECREF(frame);
     return NULL;
 }
 
