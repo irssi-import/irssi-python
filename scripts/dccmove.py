@@ -19,15 +19,15 @@ def sig_dcc_closed(dcc):
         remain = 0
         if dcc.size:
             remain = 100 - dcc.transfd / dcc.size * 100 
-        print '%%gDCC aborted %%_%s%%_, %%R%d%%%%%%g remaining%%n' % \
-                (file, remain)
+        print('%%gDCC aborted %%_%s%%_, %%R%d%%%%%%g remaining%%n' % \
+                (file, remain))
         return
 
     if not path.isdir(dir):
-        os.mkdir(dir, 0755)
+        os.mkdir(dir, 0o755)
 
     shutil.move(dcc.file, dir)
 
-    print '%%gDCC moved %%_%s%%_ to %%_%s%%_%%n' % (file, dir)
+    print('%%gDCC moved %%_%s%%_ to %%_%s%%_%%n' % (file, dir))
 
-irssi.signal_add('dcc closed', sig_dcc_closed)
+irssi.signal_add(b'dcc closed', sig_dcc_closed)
