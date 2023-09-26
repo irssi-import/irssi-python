@@ -19,7 +19,7 @@ $ autoreconf -ivf -I.
 Configure & Compile
 -------------------
 
-$ ./configure --with-irssi=PATH/TO/irssi-sources
+$ ./configure
 $ make
 
 as root
@@ -33,4 +33,9 @@ $ cp src/.libs/libpython.so ~/.irssi/modules
 
 Auto-loading the module
 -----------------------
-echo 'load python' >> ~/.irssi/startup
+
+add
+
+  python
+
+to the list in /set autoload_modules
